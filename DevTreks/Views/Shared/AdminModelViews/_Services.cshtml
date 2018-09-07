@@ -1,0 +1,27 @@
+﻿@using DevTreks.Helpers;
+@using DevTreks.Data.AppHelpers;
+
+@model DevTreks.Data.ContentURI
+@{
+    ViewBag.Title = "Agreement";
+}
+<div>
+    @{
+    if (Model.URINodeName == Agreement.AGREEMENT_BASE_TYPES.servicebasegroup.ToString())
+    {
+        @await Html.PartialAsync("AdminModelViews/_ServiceGroup", ViewData.Model)
+    }
+    else if (Model.URINodeName == Agreement.AGREEMENT_TYPES.serviceaccount.ToString())
+    {
+        @await Html.PartialAsync("AdminModelViews/_ServiceGroup", ViewData.Model)
+    }
+    else if (Model.URINodeName == Agreement.AGREEMENT_BASE_TYPES.servicebase.ToString())
+    {
+        @await Html.PartialAsync("AdminModelViews/_Service", ViewData.Model)
+    }
+    else if (Model.URINodeName == Agreement.AGREEMENT_TYPES.service.ToString())
+    {
+        @await Html.PartialAsync("AdminModelViews/_AccountToService", ViewData.Model)
+    }
+    }
+</div>

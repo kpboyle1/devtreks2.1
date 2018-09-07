@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>DevTreks.Extensions</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Composition" Version="1.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CalculatorsContracts\CalculatorsContracts.csproj" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="if not exist &quot;$(OutDir)..\..\..\..\..\DevTreks\wwwroot\Extensions&quot;  mkdir &quot;$(OutDir)..\..\..\..\..\DevTreks\wwwroot\Extensions&quot;&#xD;&#xA;copy &quot;$(OutDir)$(TargetName).dll&quot; &quot;$(OutDir)..\..\..\..\..\DevTreks\wwwroot\Extensions\$(TargetName).dll&quot; /Y&#xD;&#xA;copy &quot;$(OutDir)$(TargetName).pdb&quot; &quot;$(OutDir)..\..\..\..\..\DevTreks\wwwroot\Extensions\$(TargetName).pbd&quot; /Y" />
+  </Target>
+
+</Project>

@@ -1,0 +1,85 @@
+﻿@using DevTreks.Data;
+@using DevTreks.Data.Helpers;
+@using DevTreks.Data.AppHelpers;
+@using DevTreks.Helpers;
+
+@model DevTreks.Data.ContentURI
+           
+@{
+    //form stylesheet parameters get set here
+    StylesheetHelper.SetModelDisplayParameters(Model);
+    if (ViewData.Model.URIDataManager.ServerActionType != GeneralHelpers.SERVER_ACTION_TYPES.edit)
+    {
+        ViewData.Model.URIDataManager.EditViewEditType = GeneralHelpers.VIEW_EDIT_TYPES.part;
+        ViewData.Model.URIDataManager.PreviewViewEditType = GeneralHelpers.VIEW_EDIT_TYPES.part;
+    }
+    if (ViewData.Model.URIDataManager.SubAppType == GeneralHelpers.SUBAPPLICATION_TYPES.addins)
+    {
+        @await Html.PartialAsync("AdminModelViews/_AccountTos", ViewData.Model)
+    }
+    else if (ViewData.Model.URIDataManager.SubAppType == GeneralHelpers.SUBAPPLICATION_TYPES.agreements)
+    {
+        @await Html.PartialAsync("AdminModelViews/_Services", ViewData.Model)
+    }
+    else if (ViewData.Model.URIDataManager.SubAppType == GeneralHelpers.SUBAPPLICATION_TYPES.budgets)
+    {
+        @await Html.PartialAsync("ContentModelViews/_Budgets", ViewData.Model)
+    }
+    else if (ViewData.Model.URIDataManager.SubAppType == GeneralHelpers.SUBAPPLICATION_TYPES.clubs)
+    {
+        @await Html.PartialAsync("AdminModelViews/_Accounts", ViewData.Model)
+    }
+    else if (ViewData.Model.URIDataManager.SubAppType == GeneralHelpers.SUBAPPLICATION_TYPES.componentprices)
+    {
+        @await Html.PartialAsync("ContentModelViews/_Components", ViewData.Model)
+    }
+    else if (ViewData.Model.URIDataManager.SubAppType == GeneralHelpers.SUBAPPLICATION_TYPES.devpacks)
+    {
+        @await Html.PartialAsync("ContentModelViews/_DevPacks", ViewData.Model)
+    }
+    else if (ViewData.Model.URIDataManager.SubAppType == GeneralHelpers.SUBAPPLICATION_TYPES.inputprices)
+    {
+        @await Html.PartialAsync("ContentModelViews/_Inputs", ViewData.Model)
+    }
+    else if (ViewData.Model.URIDataManager.SubAppType == GeneralHelpers.SUBAPPLICATION_TYPES.investments)
+    {
+        @await Html.PartialAsync("ContentModelViews/_Investments", ViewData.Model)
+    }
+    else if (ViewData.Model.URIDataManager.SubAppType == GeneralHelpers.SUBAPPLICATION_TYPES.linkedviews)
+    {
+        @await Html.PartialAsync("ContentModelViews/_LinkedViews", ViewData.Model)
+    }
+    else if (ViewData.Model.URIDataManager.SubAppType == GeneralHelpers.SUBAPPLICATION_TYPES.locals)
+    {
+        @await Html.PartialAsync("AdminModelViews/_AccountTos", ViewData.Model)
+    }
+    else if (ViewData.Model.URIDataManager.SubAppType == GeneralHelpers.SUBAPPLICATION_TYPES.members)
+    {
+        @await Html.PartialAsync("AdminModelViews/_Members", ViewData.Model)
+    }
+    else if (ViewData.Model.URIDataManager.SubAppType == GeneralHelpers.SUBAPPLICATION_TYPES.networks)
+    {
+        @await Html.PartialAsync("AdminModelViews/_Networks", ViewData.Model)
+    }
+    else if (ViewData.Model.URIDataManager.SubAppType == GeneralHelpers.SUBAPPLICATION_TYPES.operationprices)
+    {
+        @await Html.PartialAsync("ContentModelViews/_Operations", ViewData.Model)
+    }
+    else if (ViewData.Model.URIDataManager.SubAppType == GeneralHelpers.SUBAPPLICATION_TYPES.outcomeprices)
+    {
+        @await Html.PartialAsync("ContentModelViews/_Outcomes", ViewData.Model)
+    }
+    else if (ViewData.Model.URIDataManager.SubAppType == GeneralHelpers.SUBAPPLICATION_TYPES.outputprices)
+    {
+        @await Html.PartialAsync("ContentModelViews/_Outputs", ViewData.Model)
+    }
+    else if (ViewData.Model.URIDataManager.SubAppType == GeneralHelpers.SUBAPPLICATION_TYPES.resources)
+    {
+        @await Html.PartialAsync("ContentModelViews/_Resources", ViewData.Model)
+    }
+    else 
+    {
+        @Html.Raw("<strong>The model could not be displayed because the subapplication type could not be determined.</strong>")
+    }
+    
+}

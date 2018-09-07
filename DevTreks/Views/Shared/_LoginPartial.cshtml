@@ -1,10 +1,28 @@
 @using Microsoft.AspNetCore.Identity
+@*@using Microsoft.AspNetCore.Http;*@
+@using Microsoft.Extensions.Options;
+@using DevTreks.Services;
 
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
+@inject IOptions<DevTreks.Data.ContentURI> uri
 
 @if (SignInManager.IsSignedIn(User))
 {
+    //216: devtreks requires newly registered aspnetuser to also 
+    //be a devtreks member 
+    string sReferer = SignInManager.Context.Request.Headers["Referer"];
+    string sAspNetId = UserManager.GetUserId(User);
+    var user = await UserManager.GetUserAsync(User);
+    string sEmail = user.Email;
+    if (!string.IsNullOrEmpty(sReferer)
+        && uri.Value != null)
+    {
+        IMemberService memberManager = new MemberService(uri.Value);
+        bool bIsMember =
+            await memberManager.InsertNewlyRegisteredUser(sReferer, sAspNetId, sEmail);
+        //unlikely to need further feedback here -they'll get an error message on club panel
+    }
     <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post" id="logoutForm" class="navbar-right">
         <ul class="nav navbar-nav navbar-right">
             <li>

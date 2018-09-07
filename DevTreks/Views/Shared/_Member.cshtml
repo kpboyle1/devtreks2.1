@@ -1,0 +1,34 @@
+﻿@using DevTreks.Helpers;
+@using DevTreks.Data;
+
+@model ContentURI
+  
+
+@if (ViewData.Model.URIMember != null)
+{
+    if (ViewData.Model.URIMember.PKId == 0)
+    {
+        ViewData.Model.ErrorMessage = AppHelper.GetResource("MEMBER_NOCLUB");
+    }
+}
+else
+{
+    ViewData.Model.ErrorMessage = AppHelper.GetResource("MEMBER_NOCLUB");
+}
+@if (!DevTreks.Helpers.HtmlMemberExtensions.UserIsLoggedIn(this.Context))
+{
+    @HtmlHelperExtensions.MemberNotLoggedIn(Html, Model)
+}
+else
+{
+    if (string.IsNullOrEmpty(ViewData.Model.ErrorMessage))
+    {
+        @HtmlHelperExtensions.MemberLoggedIn(Html, Model, this.Context)
+    }
+    else
+    {
+        Write(Html.PError(ViewData.Model.ErrorMessage));
+        ViewData.Model.ErrorMessage = string.Empty;     
+    }
+}
+
