@@ -148,7 +148,7 @@ namespace DevTreks.Extensions.Algorithms
                         //webapi web domain
                         if (inputFilePath.Contains("localhost"))
                         {
-                            statScript.DefaultWebDomain = "http://localhost:5000/";
+                            statScript.DefaultWebDomain = "https://localhost:5001/";
                         }
                         else
                         {
@@ -159,7 +159,7 @@ namespace DevTreks.Extensions.Algorithms
                     {
                         if (inputFilePath.Contains("localhost"))
                         {
-                            statScript.DefaultWebDomain = "http://localhost:5000/";
+                            statScript.DefaultWebDomain = "https://localhost:5001/";
                         }
                         else
                         {

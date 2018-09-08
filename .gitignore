@@ -261,3 +261,4 @@ __pycache__/
 *.pyc
 /DevTreks/wwwroot/Extensions
 /DevTreks/wwwroot/resources
+/DevTreks.Extensions/DevTreks/wwwroot/Extensions
