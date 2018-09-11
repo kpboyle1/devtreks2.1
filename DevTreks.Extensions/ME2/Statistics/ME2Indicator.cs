@@ -24,7 +24,7 @@ namespace DevTreks.Extensions
     ///             this pattern more flexible with more emphasis on Indicator.URL and 
     ///             less emphasis on Score.DataURL
     ///             Version 2.1.4 added machine learning algo and simplified calc patterns
-    ///             2.1.6 supported legacy calc pattern as a new joint calcpattern
+    ///             2.1.6 supported legacy calc pattern as a new joint calc pattern
     /// </summary>   
     public class ME2Indicator : CostBenefitCalculator
     {
@@ -990,13 +990,11 @@ namespace DevTreks.Extensions
                 if (this != null)
                 {
                     //216 joint Indicator and Score pattern
-                    if (HasDataMatrix(indicatorNumber))
+                    if (HasDataMatrix(0))
                     {
-                        bHasCalculations = await CalculateJointCalculations(indicatorNumber);
+                        bHasCalculations = await CalculateJointCalculations(0);
                     }
-                    if (bHasCalculations)
-                        return bHasCalculations;
-                    //process remaining indicators
+                    //process remaining indicators (use _indicators to not repeat calcs)
                     bHasCalculations = await CalculateIndicators(indicatorNumber);
                     //not try catch? means good calcs
                     bHasCalculations = true;
@@ -1049,7 +1047,6 @@ namespace DevTreks.Extensions
         public async Task<bool> CalculateIndicators(int indicatorIndex)
         {
             bool bHasCalculations = false;
-            bool bHasIndicator1 = false;
             string sAlgo = string.Empty;
             List<double> qTs = new List<double>();
             if (indicatorIndex == 1)
@@ -1061,7 +1058,7 @@ namespace DevTreks.Extensions
                     {
                         sAlgo = await ProcessIndicators(indicatorIndex);
                         //216 deprecated
-                        bHasIndicator1 = true;
+                        //bHasIndicator1 = true;
                     }
                 }
                 indicatorIndex++;
@@ -1374,18 +1371,8 @@ namespace DevTreks.Extensions
                 }
                 else
                 {
-                    //216 bug fix after upgraded 214 patterns
-                    SetTotalMathTypeStock(indicatorIndex);
-                    if (ME2Indicators[indicatorIndex].IndMathSubType != Constants.NONE
-                        && (!string.IsNullOrEmpty(ME2Indicators[indicatorIndex].IndMathSubType)))
-                    {
-                        iAlgo = await SetAlgoPRAStats(indicatorIndex, qTs);
-                        sAlgo = iAlgo.ToString();
-                    }
-                    else
-                    {
-                        sAlgo = indicatorIndex.ToString();
-                    }
+                    //216 upgraded pattern
+                    sAlgo = await CalculateIndicator(indicatorIndex);
                 }
             }
             else if (HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm9)
@@ -1478,77 +1465,53 @@ namespace DevTreks.Extensions
             }
             return sAlgo;
         }
-        //214 deprecated this pattern but hold for legacy use and possible joint indicator calcs
+        public async Task<bool> CalculateJointCalculations(int indicatorIndex)
+        {
+            bool bHasCalculations = false;
+            //214: legacy pattern still useful for joint calcs
+            bHasCalculations = await ProcessIndicatorsUsingDataURL(indicatorIndex);
+            return bHasCalculations;
+        }
+        private bool HasDataMatrix(int indicatorIndex)
+        {
+            bool bHasMatrix = false;
+            if (!string.IsNullOrEmpty(DataURL)
+                && (DataURL != Constants.NONE))
+            {
+                return true;
+            }
+            //216 moved to HasJointDataMatrix instead
+            if (!bHasMatrix)
+            {
+                //score only
+                bHasMatrix = HasJointDataMatrix(0);
+            }
+            return bHasMatrix;
+        }
+        private bool HasJointDataMatrix(int indicatorIndex)
+        {
+            bool bHasMatrix = false;
+            //216 pattern: identify specific algos that use either DataURL and/or JointDataURL
+            if (!string.IsNullOrEmpty(ME2Indicators[0].IndURL)
+               && (ME2Indicators[0].IndURL != Constants.NONE))
+            {
+                if (HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm2)
+                    || HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm3)
+                    || HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm4))
+                {
+                    return true;
+                }
+            }
+            return bHasMatrix;
+        }
+        //216 simplification: dataurls only use ProcessAlgosAsync to fill in indicators
+        //otherwise use algo 2,3, and 4 technique
         public async Task<bool> ProcessIndicatorsUsingDataURL(int indicatorIndex)
         {
             bool bHasCalculations = false;
             string[] dataURLs = new string[] { };
             Task<string>[] runAlgosTasks = new Task<string>[] { };
-            //v192: changed this from an if else clause 
-            //to allow sibling calcs to run different algos (same as CalculatedInds)
-            if (HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm1))
-            {
-                dataURLs = DataURL.Split(Constants.STRING_DELIMITERS);
-                // Create a query. 
-                IEnumerable<Task<string>> runAlgosTasksQuery =
-                    from dataURL in dataURLs select ProcessAlgosAsync(indicatorIndex, dataURL);
-                // Use ToArray to execute the query and start the download tasks.
-                runAlgosTasks = runAlgosTasksQuery.ToArray();
-                //return the indicators
-                string[] indicatorscsvs = await Task.WhenAll(runAlgosTasks);
-                _indicators = GetIndicators(indicatorscsvs);
-                bHasCalculations = true;
-            }
-            else if (HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm6)
-                || HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm8))
-            {
-                //these algos must have data urls
-                if (!string.IsNullOrEmpty(DataURL)
-                    && (DataURL != Constants.NONE))
-                {
-                    //these use numeric double datasets
-                    dataURLs = DataURL.Split(Constants.STRING_DELIMITERS);
-                    // Create a query. 
-                    IEnumerable<Task<string>> runAlgosTasksQuery =
-                        from dataURL in dataURLs select ProcessAlgosAsync(indicatorIndex, dataURL);
-                    // Use ToArray to execute the query and start the download tasks.
-                    runAlgosTasks = runAlgosTasksQuery.ToArray();
-                    //return the indicators
-                    string[] indicatorscsvs = await Task.WhenAll(runAlgosTasks);
-                    _indicators = GetIndicators(indicatorscsvs);
-                    bHasCalculations = true;
-                }
-                else
-                {
-                    //missing correlation matrix 
-                    CalculatorDescription += string.Concat("----", Errors.MakeStandardErrorMsg("DATAURL_MISSING"));
-                }
-            }
-            else if (HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm5)
-                || HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm7))
-            {
-                //these algos must have joint data urls with standard dataset format
-                if (!string.IsNullOrEmpty(ME2Indicators[0].IndURL)
-                    && (ME2Indicators[0].IndURL != Constants.NONE))
-                {
-                    dataURLs = ME2Indicators[0].IndURL.Split(Constants.STRING_DELIMITERS);
-                    // Create a query. 
-                    IEnumerable<Task<string>> runAlgosTasksQuery =
-                        from dataURL in dataURLs select ProcessAlgosAsync(indicatorIndex, dataURL);
-                    // Use ToArray to execute the query and start the download tasks.
-                    runAlgosTasks = runAlgosTasksQuery.ToArray();
-                    //return the indicators
-                    string[] indicatorscsvs = await Task.WhenAll(runAlgosTasks);
-                    _indicators = GetIndicators(indicatorscsvs);
-                    bHasCalculations = true;
-                }
-                else
-                {
-                    //missing correlation matrix 
-                    CalculatorDescription += string.Concat("----", Errors.MakeStandardErrorMsg("DATAURL_MISSING"));
-                }
-            }
-            else if (HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm2)
+            if (HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm2)
                 || HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm3)
                 || HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm4))
             {
@@ -1584,60 +1547,54 @@ namespace DevTreks.Extensions
                     //missing correlation matrix 
                     ME2Indicators[0].IndMathResult += string.Concat("----", Errors.MakeStandardErrorMsg("JOINTURL_MISSING"));
                 }
-                return bHasCalculations;
-            }
-            return bHasCalculations;
-        }
-        private bool HasDataMatrix(int indicatorIndex)
-        {
-            bool bHasMatrix = false;
-            if (!string.IsNullOrEmpty(DataURL)
-                && (DataURL != Constants.NONE))
-            {
-                return true;
-            }
-            //216 moved to HasJointDataMatrix instead
-            return bHasMatrix;
-        }
-        public async Task<bool> CalculateJointCalculations(int indicatorIndex)
-        {
-            bool bHasCalculations = false;
-            //216: check score only
-            if (HasJointDataMatrix(0))
-            {
-                //216 possible pattern: ids algos that use both Score URLs 
-                //and Score algorithm to run joint Indicator calcs
-                bHasCalculations = await ProcessIndicatorsUsingDataURL(0);
             }
             else
             {
-                //214: legacy pattern fills in joint indicators using dataurl only
-                bHasCalculations = await ProcessIndicatorsUsingDataURL(indicatorIndex);
+                //dataurl only for joint calcs
+                if (HasDataMatrix(indicatorIndex))
+                {
+                    dataURLs = DataURL.Split(Constants.STRING_DELIMITERS);
+                    IEnumerable<Task<string>> runAlgosTasksQuery =
+                        from dataURL in dataURLs select ProcessAlgosAsync(indicatorIndex, dataURL);
+                    //use ToArray to execute the query and start the download tasks.
+                    runAlgosTasks = runAlgosTasksQuery.ToArray();
+                    //return the indicators
+                    string[] indicatorscsvs = await Task.WhenAll(runAlgosTasks);
+                    _indicators = GetIndicators(indicatorscsvs);
+                    bHasCalculations = true;
+                }
+                else
+                {
+                    //missing correlation matrix 
+                    ME2Indicators[0].IndMathResult += string.Concat("----", Errors.MakeStandardErrorMsg("JOINTURL_MISSING"));
+                }
             }
             return bHasCalculations;
         }
- 
-        private bool HasJointDataMatrix(int indicatorIndex)
+        
+        public async Task<string> CalculateIndicator(int indicatorIndex)
         {
-            bool bHasMatrix = false;
-            //216 pattern: identify specific algos that use both DataURL and JointDataURL
-            if (!string.IsNullOrEmpty(ME2Indicators[0].IndURL)
-                && (ME2Indicators[0].IndURL != Constants.NONE))
+            //216 bug fix: use mathexp and same pattern as M and E
+            string sAlgo = indicatorIndex.ToString();
+            //run mathexpression
+            SetTotalMathTypeStock(indicatorIndex);
+            //run any pras
+            if (HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm1))
             {
-                if (HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm5)
-                    || HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm7))
-                {
-                    return true;
-                }
-                else if (HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm2)
-                    || HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm3)
-                    || HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm4))
-                {
-                    return true;
-                }
+                List<double> qTs = new List<double>();
+                //only runs for subalgos 1 to 4
+                int iAlgo = await SetAlgoPRAStats(indicatorIndex, qTs);
+                sAlgo = iAlgo.ToString();
             }
-            return bHasMatrix;
+            else
+            {
+                sAlgo = indicatorIndex.ToString();
+            }
+            return sAlgo;
         }
+        
+        
+        
         public void CopyCalculatorMathToScoreMath()
         {
             //minimal props to run algos from analyzers
@@ -2228,23 +2185,22 @@ namespace DevTreks.Extensions
             {
                 //reset the data
                 data = new Dictionary<int, List<List<double>>>();
-                //it's ok for subsequent datasets to overwrite previous results (by design)
-                if (HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm5)
-                    || HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm6)
-                    || HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm7)
-                    || HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm8))
+                if (HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm1))
                 {
-                    //214 uses regular R and Python-style datasets for compatibility
-                    data = GetDataSetRandPy(indicatorIndex, lines);
-                    //214 deprecated using Indicator labels in joint data files
-                    //ok for algos that don't need to calculate qT from q1 to q10 vars
-                    //data = GetDataSet(lines);
+                    //score with dataurl means joint calc pattern w algos needed
+                    if (indicatorIndex == 0 && HasDataMatrix(indicatorIndex))
+                    {
+                        data = GetDataSet(lines);
+                    }
+                    else
+                    {
+                        data = GetDataSetwithQT(indicatorIndex, lines);
+                    }
                 }
                 else
                 {
-                    //algo1 calls this
-                    //182: this is used with algos2-4, but they don't call it from here (they call it from PRA)
-                    data = GetDataSetwithQT(indicatorIndex, lines);
+                    //216 support for joint calc pattern using Indicator labels in dataurl files
+                    data = GetDataSet(lines);
                 }
                 //if null already has an error message
                 if (data != null)
@@ -2258,7 +2214,9 @@ namespace DevTreks.Extensions
                         {
                             if (ds.Value[0].Count() > 1)
                             {
-                                algoIndicator= -1;
+                                //useful pattern for multi indicator calcs with joint dataset
+                                //can be easilty expanded for additional algos 
+                                algoIndicator = -1;
                                 if (_indicators.Contains(ds.Key) == false)
                                 {
                                     //this supports multiple algos that use the same pattern

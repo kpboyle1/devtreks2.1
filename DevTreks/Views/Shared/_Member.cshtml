@@ -17,7 +17,9 @@ else
 }
 @if (!DevTreks.Helpers.HtmlMemberExtensions.UserIsLoggedIn(this.Context))
 {
-    @HtmlHelperExtensions.MemberNotLoggedIn(Html, Model)
+    <div data-role="navbar">
+        @await Html.PartialAsync("_LoginPartial")
+    </div>
 }
 else
 {

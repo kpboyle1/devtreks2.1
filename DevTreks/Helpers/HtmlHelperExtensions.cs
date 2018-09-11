@@ -886,7 +886,7 @@ namespace DevTreks.Helpers
             using (StringWriter result = new StringWriter())
             {
                 result.WriteLine(
-                    "Current version: DevTreks 2.1.6, September 07, 2018");
+                    "Current version: DevTreks 2.1.6, September 12, 2018");
                 return new HtmlString(result.ToString());
             }
         }
@@ -2330,32 +2330,13 @@ namespace DevTreks.Helpers
                 }
                 result.WriteLine(helper.DivStart(string.Empty, string.Empty,
                     "navbar", string.Empty));
-                result.WriteLine(helper.ULStart(string.Empty, string.Empty));
-                //216: uses default Identity pattern for logout (w returnURL)
-                //result.WriteLine(helper.LIStart(string.Empty, string.Empty));
-                //note this is not a form postback and does not use AccountController.LogOff
-                //it uses custom action AccountController.LogOut
-                //helper.ActionLink(AppHelper.GetResource("LOGOUT"),
-                //    "Logout", "Identity/Account",
-                //    routeValues: null,
-                //    htmlAttributes: new { data_role = "button", data_mini = "true", data_inline = "true", id = "logoffLink" })
-                //    .WriteTo(result, HtmlEncoder.Default);
-                //result.WriteLine(helper.LIEnd());
-                result.WriteLine(helper.LIStart(string.Empty, string.Empty));
-                //216: uses default Identity pattern
-                helper.ActionLink(AppHelper.GetResource("LOGIN_CHANGE"),
-                    "Manage", "Identity/Account",
-                    routeValues: null,
-                    htmlAttributes: new { @class = "username", title = "Manage", data_role = "button", data_mini = "true", data_inline = "true", id = "loginChange" })
-                    .WriteTo(result, HtmlEncoder.Default);
-                result.WriteLine(helper.LIEnd());
-                result.WriteLine(helper.LIStart(string.Empty, string.Empty));
+                //216: switched to default Identity pattern w less custom code
+                helper.PartialAsync("_LoginPartial", model)
+                    .Result.WriteTo(result, HtmlEncoder.Default);
                 bool bIsBaseMember2 = true;
                 HtmlHelperExtensions.MakeMemberLink(helper,
                     model, model.URIMember, AppHelper.GetResource("MEMBERSHIP_EDIT"),
                     bIsBaseMember2).WriteTo(result, HtmlEncoder.Default);
-                result.WriteLine(helper.LIEnd());
-                result.WriteLine(helper.ULEnd());
                 result.WriteLine(helper.DivEnd());
                 if (ContentURI.GetContentURIPatternPart(
                     model.URIDataManager.ContentURIPattern,
