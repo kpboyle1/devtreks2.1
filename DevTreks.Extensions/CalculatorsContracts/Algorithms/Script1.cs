@@ -11,7 +11,7 @@ namespace DevTreks.Extensions.Algorithms
     /// <summary>
     ///Purpose:		Run scripting language algorithms
     ///Author:		www.devtreks.org
-    ///Date:		2018, April
+    ///Date:		2018, September
     ///References:	CTA 1, 2, and 3 references
     ///</summary>
     public class Script1 : Calculator1
@@ -89,13 +89,46 @@ namespace DevTreks.Extensions.Algorithms
                         //has to be done each time because can't be sure when scriptfile changed last
                         if (!scriptFilePath.EndsWith(".pyw"))
                         {
-                            //210: deprecated bottom code in favor of moving it to temp docs path -overcomes localhost:5509 versus 5000 debugging
+                            //allow the console to generate error messages
                             string sFileName = Path.GetFileName(scriptFilePath);
+                            string sPyScriptFileName = sFileName.Replace(".txt", ".pyw");
                             bool bIsLocalCache = false;
-                            string sTempPath = CalculatorHelpers.GetTempDocsPath(_params.ExtensionDocToCalcURI, bIsLocalCache, sFileName);
+                            string sFilePath = CalculatorHelpers.GetTempDocsPath(
+                                _params.ExtensionDocToCalcURI, bIsLocalCache, sPyScriptFileName);
                             bool bHasFile = await CalculatorHelpers.CopyFiles(
-                                _params.ExtensionDocToCalcURI, scriptFilePath, sTempPath);
-                            scriptFilePath = sTempPath;
+                                _params.ExtensionDocToCalcURI, scriptFilePath, sFilePath);
+                            scriptFilePath = sFilePath;
+                            //216: pythonw.exe stopped accepting urls as input file paths (https redirect?)
+                            sFileName = Path.GetFileName(inputFilePath);
+                            sFilePath = CalculatorHelpers.GetTempDocsPath(
+                                _params.ExtensionDocToCalcURI, bIsLocalCache, sFileName);
+                            bool bHasCopied = await CalculatorHelpers.CopyWebFileToFileSystemAsync(
+                                inputFilePath, sFilePath);
+                            if (!string.IsNullOrEmpty(sFilePath))
+                            {
+                                inputFilePath = sFilePath;
+                            }
+
+                            //pre 216
+                            //210: deprecated bottom code in favor of moving it to temp docs path -overcomes localhost:5509 versus 5000 debugging
+                            //string sFileName = Path.GetFileName(scriptFilePath);
+                            //bool bIsLocalCache = false;
+                            //string sTempPath = CalculatorHelpers.GetTempDocsPath(_params.ExtensionDocToCalcURI, bIsLocalCache, sFileName);
+                            //pre 210: //bool bHasFile = CalculatorHelpers.SaveTextInURI(_params.ExtensionDocToCalcURI, sPyScript, sPyPath, out sError);
+                            //bool bHasFile = await CalculatorHelpers.CopyFiles(
+                            //    _params.ExtensionDocToCalcURI, scriptFilePath, sTempPath);
+                            //scriptFilePath = sTempPath;
+                            //pre 210
+                            //string sPyScript = CalculatorHelpers.ReadText(_params.ExtensionDocToCalcURI, scriptFilePath, out sError);
+                            //if (!string.IsNullOrEmpty(sPyScript))
+                            //{
+                            //    string sFileName = Path.GetFileName(scriptFilePath);
+                            //    string sPyScriptFileName = sFileName.Replace(".txt", ".pyw");
+                            //    bool bIsLocalCache = false;
+                            //    string sPyPath = CalculatorHelpers.GetTempDocsPath(_params.ExtensionDocToCalcURI, bIsLocalCache, sPyScriptFileName);
+                            //    bool bHasFile = CalculatorHelpers.SaveTextInURI(_params.ExtensionDocToCalcURI, sPyScript, sPyPath, out sError);
+                            //    scriptFilePath = sPyPath;
+                            //}
                         }
                     }
                     sb.AppendLine("python results");
@@ -227,6 +260,10 @@ namespace DevTreks.Extensions.Algorithms
                         meta.MathResult = "The script did not run successfully. Please check the dataset and script. Verify their urls.";
                     }
                 }
+                else
+                {
+                    meta.MathResult = "The script did not run successfully. Please check the dataset and script. Verify their urls.";
+                }
             }
             catch (Exception ex)
             {
@@ -237,12 +274,21 @@ namespace DevTreks.Extensions.Algorithms
         private List<string> RunScript(StringBuilder sb, string scriptExecutable, 
             string scriptFilePath, string inputFilePath)
         {
+            bool bIsPy = scriptFilePath.EndsWith("pyw") ? true : false;
             //run the excecutable as a console app
             ProcessStartInfo start = new ProcessStartInfo();
             start.FileName = scriptExecutable;
             start.RedirectStandardOutput = true;
             start.UseShellExecute = false;
-            start.Arguments = string.Format("{0} {1}", scriptFilePath, inputFilePath);
+            if (bIsPy)
+            {
+                start.Arguments = string.Format("{0} {1}", scriptFilePath, @"C:\DevTreks.2.1.6\wwwroot\resources\network_carbon\resourcepack_526\resource_1771\Regress1.csv");
+                //start.Arguments = string.Format("{0} {1} {2}", "py", scriptFilePath, inputFilePath);
+            }
+            else
+            {
+                start.Arguments = string.Format("{0} {1}", scriptFilePath, inputFilePath);
+            }
             start.CreateNoWindow = true;
             List<string> last3Lines = new List<string>();
             string sLastLine = string.Empty;

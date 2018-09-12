@@ -3906,6 +3906,15 @@ namespace DevTreks.Extensions
                 fromFile, toFile);
             return bHasCompleted;
         }
+        public static async Task<bool> CopyWebFileToFileSystemAsync(
+            string webFilePath, string fileSystemPath)
+        {
+            bool bHasCompleted = false;
+            DevTreksHelpers.WebServerFileIO webIO = new DevTreksHelpers.WebServerFileIO();
+            bHasCompleted = await webIO.CopyWebFileToFileSystemAsync(
+                webFilePath, fileSystemPath);
+            return bHasCompleted;
+        }
         //public static async Task<List<string>> ReadLinesAsync(
         //    ExtensionContentURI extURI, string fromFile)
         //{

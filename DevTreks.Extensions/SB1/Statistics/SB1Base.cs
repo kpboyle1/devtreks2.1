@@ -14307,114 +14307,7 @@ namespace DevTreks.Extensions
             }
             return bHasCalculations;
         }
-        //216 hold for legacy use and joint indicator calcs
-        //public async Task<bool> ProcessIndicatorsUsingDataURL(int indicatorIndex, IndicatorQT1 qt1,
-        //    string indicatorURL)
-        //{
-        //    bool bHasCalculations = false;
-        //    string[] dataURLs = new string[] { };
-        //    Task<string>[] runAlgosTasks = new Task<string>[] { };
-        //    if (HasMathType(qt1.Label, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm1))
-        //    {
-        //        dataURLs = DataURL.Split(Constants.STRING_DELIMITERS);
-        //        // Create a query. 
-        //        IEnumerable<Task<string>> runAlgosTasksQuery =
-        //            from dataURL in dataURLs select ProcessAlgosAsync(indicatorIndex, qt1, dataURL);
-        //        // Use ToArray to execute the query and start the download tasks.
-        //        runAlgosTasks = runAlgosTasksQuery.ToArray();
-        //        //return the indicators
-        //        string[] indicatorscsvs = await Task.WhenAll(runAlgosTasks);
-        //        _indicators = GetIndicators(indicatorscsvs);
-        //        bHasCalculations = true;
-        //    }
-        //    else if (HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm6)
-        //        || HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm8))
-        //    {
-        //        //these algos must have data urls
-        //        if (!string.IsNullOrEmpty(DataURL)
-        //            && (DataURL != Constants.NONE))
-        //        {
-        //            //these use numeric double datasets
-        //            dataURLs = DataURL.Split(Constants.STRING_DELIMITERS);
-        //            // Create a query. 
-        //            IEnumerable<Task<string>> runAlgosTasksQuery =
-        //                from dataURL in dataURLs select ProcessAlgosAsync(indicatorIndex, qt1, dataURL);
-        //            // Use ToArray to execute the query and start the download tasks.
-        //            runAlgosTasks = runAlgosTasksQuery.ToArray();
-        //            //return the indicators
-        //            string[] indicatorscsvs = await Task.WhenAll(runAlgosTasks);
-        //            _indicators = GetIndicators(indicatorscsvs);
-        //            bHasCalculations = true;
-        //        }
-        //        else
-        //        {
-        //            //missing correlation matrix 
-        //            CalculatorDescription += string.Concat(" ", Errors.MakeStandardErrorMsg("DATAURL_MISSING"));
-        //        }
-        //    }
-        //    else if (HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm5)
-        //        || HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm7))
-        //    {
-        //        //these algos must have joint data urls with standard dataset format
-        //        if (!string.IsNullOrEmpty(this.SB1JointDataURL)
-        //            && (this.SB1JointDataURL != Constants.NONE))
-        //        {
-        //            dataURLs = this.SB1JointDataURL.Split(Constants.STRING_DELIMITERS);
-        //            // Create a query. 
-        //            IEnumerable<Task<string>> runAlgosTasksQuery =
-        //                from dataURL in dataURLs select ProcessAlgosAsync(indicatorIndex, qt1, dataURL);
-        //            // Use ToArray to execute the query and start the download tasks.
-        //            runAlgosTasks = runAlgosTasksQuery.ToArray();
-        //            //return the indicators
-        //            string[] indicatorscsvs = await Task.WhenAll(runAlgosTasks);
-        //            _indicators = GetIndicators(indicatorscsvs);
-        //            bHasCalculations = true;
-        //        }
-        //        else
-        //        {
-        //            //missing correlation matrix 
-        //            CalculatorDescription += string.Concat(" ", Errors.MakeStandardErrorMsg("DATAURL_MISSING"));
-        //        }
-        //    }
-        //    else if (HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm2)
-        //        || HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm3)
-        //        || HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm4))
-        //    {
-        //        //these algos must have joint urls but these are not standard dataset format
-        //        if (!string.IsNullOrEmpty(this.SB1JointDataURL)
-        //            && (this.SB1JointDataURL != Constants.NONE))
-        //        {
-        //            //process the joint data urls (214 made the jointdataurl the Score.URL and DataURL the jointurl)
-        //            dataURLs = this.SB1JointDataURL.Split(Constants.STRING_DELIMITERS);
-        //            //process the datasets
-        //            string[] data2URLs = new string[] { };
-        //            data2URLs = DataURL.Split(Constants.STRING_DELIMITERS);
-        //            //set up a list of tasks to run
-        //            List<Task<string>> runTasks = new List<Task<string>>();
-        //            string sScriptURL = string.Empty;
-        //            string sDataURL = string.Empty;
-        //            for (int i = 0; i < dataURLs.Count(); i++)
-        //            {
-        //                sScriptURL = dataURLs[i];
-        //                if (data2URLs.Count() > i)
-        //                    sDataURL = data2URLs[i];
-        //                //i corresponds to jointdataurl index
-        //                //add the tasks to the collection
-        //                runTasks.Add(ProcessAlgoCorrAsync(indicatorIndex, sScriptURL, sDataURL));
-        //            }
-        //            //return a csv string of indicators when all of the tasks are completed
-        //            string[] indicatorscsvs = await Task.WhenAll(runTasks);
-        //            _indicators = GetIndicators(indicatorscsvs);
-        //            bHasCalculations = true;
-        //        }
-        //        else
-        //        {
-        //            //missing correlation matrix 
-        //            this.SB1ScoreMathResult += string.Concat("----", Errors.MakeStandardErrorMsg("JOINTURL_MISSING"));
-        //        }
-        //    }
-        //    return bHasCalculations;
-        //}
+        
 
         public async Task<string> CalculateIndicator(int indicatorIndex, IndicatorQT1 qt1)
         {
@@ -15280,11 +15173,19 @@ namespace DevTreks.Extensions
                 }
                 else
                 {
-                    //216 support for joint calc pattern using Indicator labels in dataurl files
-                    //ok for algos that don't need to calculate qT from q1 to q10 vars
-                    data = GetDataSet(lines);
+                    if (HasDataMatrix(indicatorIndex))
+                    {
+                        //216 support for joint calc pattern using Indicator labels in dataurl files
+                        data = GetDataSet(lines);
+                    }
+                    else
+                    {
+                        //216 new pattern doesn't need indicator labels in dataset
+                        //uses label as the data.key
+                        string sLabel = GetLabel(indicatorIndex);
+                        data = GetDataSetRandPy(sLabel, lines);
+                    }
                 }
-                
                 //if null already has an error message
                 if (data != null)
                 {

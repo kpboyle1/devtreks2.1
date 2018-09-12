@@ -1371,7 +1371,7 @@ namespace DevTreks.Extensions
                 }
                 else
                 {
-                    //216 upgraded pattern
+                    //216 bug fix
                     sAlgo = await CalculateIndicator(indicatorIndex);
                 }
             }
@@ -2199,8 +2199,17 @@ namespace DevTreks.Extensions
                 }
                 else
                 {
-                    //216 support for joint calc pattern using Indicator labels in dataurl files
-                    data = GetDataSet(lines);
+                    if (HasDataMatrix(indicatorIndex))
+                    {
+                        //216 support for joint calc pattern using Indicator labels in dataurl files
+                        data = GetDataSet(lines);
+                    }
+                    else
+                    {
+                        //216 new pattern doesn't need indicator labels in dataset
+                        //uses indicatorindex as the data.key
+                        data = GetDataSetRandPy(indicatorIndex, lines);
+                    }
                 }
                 //if null already has an error message
                 if (data != null)
@@ -2551,7 +2560,6 @@ namespace DevTreks.Extensions
                 || HasMathType(indicatorIndex, MATH_TYPES.algorithm3)
                 || HasMathType(indicatorIndex, MATH_TYPES.algorithm4))
             {
-                //some algorithms will have to stream the lines to cut down on memory
                 lines = await GetDataLinesAsync(dataURL);
             }
             if (lines != null)
@@ -2581,7 +2589,7 @@ namespace DevTreks.Extensions
                         {
                             indicatorIndex = await SetAlgoStats2(indicatorIndex, dataURL, scriptURL);
                         }
-                        if (indicatorIndex != 0)
+                        if (indicatorIndex != -1)
                         {
                             algoIndicators.Add(indicatorIndex);
                         }

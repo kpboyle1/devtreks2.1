@@ -1970,11 +1970,7 @@ namespace DevTreks.Extensions.Algorithms
             {
                 meta.MathResult = sb.ToString();
             }
-            if (metaType == META_TYPE.none)
-            {
-
-            }
-            else if (metaType == META_TYPE.row3_col4)
+            if (metaType == META_TYPE.row3_col4)
             {
                 //last line of string should have the QTM vars
                 if (lastLines.Count > 0)
@@ -2003,7 +1999,20 @@ namespace DevTreks.Extensions.Algorithms
                             {
                                 if (vars.Count() != 4)
                                 {
-                                    break;
+                                    if (vars.Count() == 3)
+                                    {
+                                        //py
+                                        List<string> lstVars = new List<string>();
+                                        lstVars.Add(string.Empty);
+                                        lstVars.Add(vars[0]);
+                                        lstVars.Add(vars[1]);
+                                        lstVars.Add(vars[2]);
+                                        vars = lstVars.ToArray();
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    }
                                 }
                                 int iPos = vars.Count() - 3;
                                 if (x == 1)

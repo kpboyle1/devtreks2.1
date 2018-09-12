@@ -63,6 +63,14 @@ namespace DevTreks.Extensions
             }
         }
         public const string FILENAME_DELIMITER = DevTreksHelpers.GeneralHelpers.FILENAME_DELIMITER;
+        public static char[] WEBFILE_PATH_DELIMITERS
+        {
+            get
+            {
+                return DevTreksHelpers.GeneralHelpers.WEBFILE_PATH_DELIMITERS;
+            }
+        }
+       
         public static char[] STRING_DELIMITERS
         {
             get
