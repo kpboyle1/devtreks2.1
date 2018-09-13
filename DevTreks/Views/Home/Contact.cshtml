@@ -1,18 +1,27 @@
 ﻿@{
     ViewData["Title"] = "Contact";
 }
+@using DevTreks.Helpers;
 <h2>@ViewData["Title"]</h2>
 <h3>@ViewData["Message"]</h3>
 
 <address>
     DevTreks<br />
+    Kevin Boyle, President<br />
     1930 NW Irving Street, 402<br />
     Portland, OR 97209<br />
-    <abbr title="Phone">P:</abbr>
-    leave 1 and only 1 message at: 503.796.7949
+    <abbr title="email">email:</abbr>
+    devtrekkers@gmail.com
 </address>
 
 <address>
-    <strong>Support:</strong> <a href="none">review the tutorials</a><br />
-    <strong>Marketing:</strong> <a href="none">evidence-based software doesn't do fiction</a>
+    <strong>Support:</strong> The tutorials provide the primary support for DevTreks.
+    <br />
+    <strong>Sustainability Statement:</strong> 
+    <p> 
+        Variants of the solar compass have been used for centuries to measure time and day. 
+        These early efforts at measurement continue to evolve to ensure the sustainability 
+        of this planet.
+    </p>
+    @Html.Image("logo", "/images/devtreks-logo.jpg", "DevTreks logo", "15%", "15%", string.Empty)
 </address>

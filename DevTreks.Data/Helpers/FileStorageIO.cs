@@ -11,7 +11,7 @@ namespace DevTreks.Data.Helpers
     /// <summary>
     ///Purpose:		General utilities storing files on cloud and web server file storage systems
     ///Author:		www.devtreks.org
-    ///Date:		2017, September
+    ///Date:		2018, September
     /// </summary>
     public class FileStorageIO
     {
@@ -606,7 +606,7 @@ namespace DevTreks.Data.Helpers
 
                 if (ePlatform == PLATFORM_TYPES.webserver)
                 {
-                    //don't use https urls or won't work)
+                    //216 modified for legacy http vs https
                     string sFilePath
                         = AppSettings.ConvertPathFileandWeb(uri, fullURIPath);
                     if (Path.IsPathRooted(sFilePath))

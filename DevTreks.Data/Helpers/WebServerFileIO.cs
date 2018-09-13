@@ -198,6 +198,19 @@ namespace DevTreks.Data.Helpers
             }
             return sFile;
         }
+        public async Task<bool> CopyFileSystemFileToWebAsync(ContentURI uri, 
+            string fullURIPath, string text)
+        {
+            //216 added because of https
+            bool bHasCopied = false;
+            string sFileName = Path.GetFileName(fullURIPath);
+            bool bIsLocalCache = false;
+            string sFilePath = AppSettings.GetTempDocsPathToNewFileSystemPath(
+                uri, bIsLocalCache, sFileName);
+            bHasCopied = await CopyWebFileToFileSystemAsync(
+                fullURIPath, sFilePath);
+            return bHasCopied;
+        }
         public async Task<bool> CopyWebFileToFileSystemAsync(string webFileURL, string fileSysPath)
         {
             //2.0.0 uses localhost to debug azure blob storage

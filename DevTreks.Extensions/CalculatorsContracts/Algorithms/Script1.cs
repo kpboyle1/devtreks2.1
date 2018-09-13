@@ -114,7 +114,8 @@ namespace DevTreks.Extensions.Algorithms
                             //string sFileName = Path.GetFileName(scriptFilePath);
                             //bool bIsLocalCache = false;
                             //string sTempPath = CalculatorHelpers.GetTempDocsPath(_params.ExtensionDocToCalcURI, bIsLocalCache, sFileName);
-                            //pre 210: //bool bHasFile = CalculatorHelpers.SaveTextInURI(_params.ExtensionDocToCalcURI, sPyScript, sPyPath, out sError);
+                            //pre 210: 
+                            //bool bHasFile = CalculatorHelpers.SaveTextInURI(_params.ExtensionDocToCalcURI, sPyScript, sPyPath, out sError);
                             //bool bHasFile = await CalculatorHelpers.CopyFiles(
                             //    _params.ExtensionDocToCalcURI, scriptFilePath, sTempPath);
                             //scriptFilePath = sTempPath;

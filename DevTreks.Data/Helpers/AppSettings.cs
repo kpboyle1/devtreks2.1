@@ -6,7 +6,7 @@ namespace DevTreks.Data.Helpers
     /// <summary>
     ///Purpose:		General path functions
     ///Author:		www.devtreks.org
-    ///Date:		2017, September
+    ///Date:		2018, September
     ///References:	2.0.0 moved all path construction
     ///             into this class. These reduce the construction 
     ///             down to a small number of transparent, easy-to-understand, methods.
@@ -413,6 +413,21 @@ namespace DevTreks.Data.Helpers
                 }
                 else
                 {
+                    //216 upgraded to https; check to see if old convention used
+                    if (path.Contains("http://localhost:5000"))
+                    {
+                        path = path.Replace(
+                            "http://localhost:5000",
+                            uri.URIDataManager.DefaultWebDomain);
+                    }
+                    else if (path.Contains("https://localhost:5001"))
+                    {
+                        //needed to debug development uris (44304)
+                        path = path.Replace(
+                            "https://localhost:5001",
+                            uri.URIDataManager.DefaultWebDomain);
+                    }
+                    //pre 216 only used this code
                     sConvertedPath = path.Replace(
                         uri.URIDataManager.DefaultWebDomain,
                         uri.URIDataManager.DefaultRootFullFilePath);
