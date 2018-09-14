@@ -54,7 +54,14 @@ namespace DevTreks.Extensions
                 }
                 else
                 {
-                    docToCalcURI.ErrorMessage = Errors.MakeStandardErrorMsg("CALCULATORS_MISSING_HOST");
+                    //216: azure bug to release path
+                    docToCalcURI.ErrorMessage = string.Concat(
+                        Errors.MakeStandardErrorMsg("CALCULATORS_MISSING_HOST")
+                        ," ext_typename:", extensionTypeName
+                        ," ext_path:", DataHelpers.AppSettings.GetExtensionsRelPath(calcDocURI)
+                        ," defaultrootpath:", DataHelpers.AppSettings.GetWebContentFullPath(
+                            calcDocURI, "Extensions", "AgBudgetingCalculators.dll")
+                        , " defaultroot_path:", calcDocURI.URIDataManager.DefaultRootFullFilePath);
                 }
             }
             catch (Exception x)

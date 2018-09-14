@@ -478,11 +478,12 @@ namespace DevTreks.Data.Helpers
         {
             string sWebPath = absoluteURLPath;
             FileStorageIO.PLATFORM_TYPES ePlatform = FileStorageIO.GetPlatformType(uri);
-            if (ePlatform != FileStorageIO.PLATFORM_TYPES.azure)
-            {
-                //only azure should be using https
-                sWebPath = absoluteURLPath.Replace("https", "http");
-            }
+            //216: all use https
+            //if (ePlatform != FileStorageIO.PLATFORM_TYPES.azure)
+            //{
+            //    //only azure should be using https
+            //    sWebPath = absoluteURLPath.Replace("https", "http");
+            //}
             uri.URIDataManager.WebPath = sWebPath;
         }
         public static string GetResourceRootPath(ContentURI uri,
