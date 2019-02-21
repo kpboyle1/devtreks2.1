@@ -43,7 +43,7 @@ What's New in Version 2.1.6
 1. This release upgraded to AspNet Core 2.1, fixed bugs found during further 2.1.4 testing, and upgraded the calculator patterns.
 
 
-Server version: Sql Server 2016 Express, RTM
+Server version: Sql Server 2017 Express, RTM
 
 connection string
 Server=localhost\SQLEXPRESS;Database=DevTreksDesk;Trusted_Connection=True;

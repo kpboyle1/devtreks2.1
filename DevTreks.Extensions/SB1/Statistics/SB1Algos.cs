@@ -11,7 +11,7 @@ namespace DevTreks.Extensions.SB1Statistics
     ///<summary>
     ///Purpose:		Run algorithms
     ///Author:		www.devtreks.org
-    ///Date:		2018, September
+    ///Date:		2019, February
     ///NOTES        1. 214 supported machine learning
     /// </summary> 
     public class SB1Algos : SB1Base
@@ -149,7 +149,8 @@ namespace DevTreks.Extensions.SB1Statistics
                 || this.HasMathType(label, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm15)
                 || this.HasMathType(label, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm16)
                 || this.HasMathType(label, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm17)
-                || this.HasMathType(label, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm18))
+                || this.HasMathType(label, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm18)
+                || this.HasMathType(label, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm19))
             {
                 //if its a good probability calc returns the string
                 algoindicator = await SetDRR2IndicatorStats(label, colNames, data,

@@ -9,7 +9,7 @@ namespace DevTreks.Extensions
     ///<summary>
     ///Purpose:		Run both calculators and analyzers for Stock data
     ///Author:		www.devtreks.org
-    ///Date:		2017, September
+    ///Date:		2019, February
     ///Notes:       2.1.0 refactored to simpler mef pattern
     ///         
     /// </summary>
@@ -51,12 +51,9 @@ namespace DevTreks.Extensions
                 case ContractHelpers.EXTENSION_STEPS.steptwo:
                     //clear updates collection
                     updates.Clear();
-                    if (SB1CalcParams != null)
-                    {
-                        //set constants for this step
-                        bHasCalculation
-                            = await SB1CalculatorHelper.SetConstants(SB1CalcParams);
-                    }
+                    //218 eliminated GetConstants code -not used in Stock or ME2
+                    //just save this step's edits
+                    bHasCalculation = true;
                     extDocToCalcURI.URIDataManager.NeedsFullView = false;
                     extDocToCalcURI.URIDataManager.NeedsSummaryView = false;
                     break;

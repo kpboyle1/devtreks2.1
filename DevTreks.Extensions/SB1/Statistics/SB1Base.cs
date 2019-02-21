@@ -13,7 +13,7 @@ namespace DevTreks.Extensions
     /// <summary>
     ///Purpose:		Serialize and deserialize a Stock object with up to 20 indicators
     ///Author:		www.devtreks.org
-    ///Date:		2018, September
+    ///Date:		2019, February
     ///NOTES        1. These support unit input and output indicators. The Q must be set in 
     ///             the Op/Comp/Outcome.
     ///             In preparation for the machine learning algorithms, Version 2.1.4 made 
@@ -14124,7 +14124,8 @@ namespace DevTreks.Extensions
                 || HasMathType(qt1.Label, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm15)
                 || HasMathType(qt1.Label, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm16)
                 || HasMathType(qt1.Label, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm17)
-                || HasMathType(qt1.Label, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm18))
+                || HasMathType(qt1.Label, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm18)
+                || HasMathType(qt1.Label, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm19))
             {
                 //212 Score analysis
                 if (indicatorIndex == 0
@@ -15462,7 +15463,8 @@ namespace DevTreks.Extensions
                             || HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm15)
                             || HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm16)
                             || HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm17)
-                            || HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm18))
+                            || HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm18)
+                            || HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm19))
                         {
                             if (indicatorIndex == 0)
                             {
