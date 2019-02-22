@@ -314,8 +314,8 @@ namespace DevTreks.Extensions.Algorithms
             }
             else if (_subalgorithm == MATH_SUBTYPES.subalgorithm19.ToString())
             {
-                //need new QTMs, QTLs, and QTUs, 3 certainties, 
-                iColCount = data[0].Count + 9;
+                //normalized and aggregated 6 QTMs, QTLs, QTUs, 3 certainties, 2 percent flow and stock
+                iColCount = data[0].Count + 11;
             }
             return iColCount;
         }
@@ -1308,7 +1308,6 @@ namespace DevTreks.Extensions.Algorithms
             string sLabel
                 = CalculatorHelpers.GetParsedString(0, Constants.FILENAME_DELIMITERS, rowNames[r][0]);
             bool bIsIndicator = IsIndicator(sLabel);
-            //iterate through columns, skipping y column
             for (int c = 0; c < data[r].Count; c++)
             {
                 if (c == 0)
@@ -1638,7 +1637,6 @@ namespace DevTreks.Extensions.Algorithms
                 {
                     //no locationindex parameters
                     //locationIndicator.Indicators[c] = data[r][c];
-                    //keep original data intact for scorecards
                 }
             }
         }
@@ -2180,6 +2178,8 @@ namespace DevTreks.Extensions.Algorithms
             IndicatorQT.Q1 = 0;
             IndicatorQT.Q2 = 0;
             IndicatorQT.Q3 = 0;
+            IndicatorQT.Q4 = 0;
+            IndicatorQT.Q5 = 0;
             IndicatorQT.QTM = 0;
             IndicatorQT.QTL = 0;
             IndicatorQT.QTU = 0;
@@ -2199,9 +2199,13 @@ namespace DevTreks.Extensions.Algorithms
                     IndicatorQT.QT += (location.Q1 / scoreIndicator.IndicatorQT1s.Count);
                     IndicatorQT.QTD1 += (location.Q2 / scoreIndicator.IndicatorQT1s.Count);
                     IndicatorQT.QTD2 += (location.Q3 / scoreIndicator.IndicatorQT1s.Count);
-                    IndicatorQT.QTUnit = "actual certainty1";
-                    IndicatorQT.QTD1Unit = "actual certainty2";
-                    IndicatorQT.QTD2Unit = "actual certainty3";
+                    IndicatorQT.QTUnit = "avg actual certainty1";
+                    IndicatorQT.QTD1Unit = "avg actual certainty2";
+                    IndicatorQT.QTD2Unit = "avg actual certainty3";
+                    IndicatorQT.Q1 += (location.Q4 / scoreIndicator.IndicatorQT1s.Count);
+                    IndicatorQT.Q1Unit = "avg flow percent";
+                    IndicatorQT.Q2 += (location.Q5 / scoreIndicator.IndicatorQT1s.Count);
+                    IndicatorQT.Q2Unit = "avg stock percent";
                 }
             }
         }
@@ -2405,31 +2409,61 @@ namespace DevTreks.Extensions.Algorithms
             }
             else if (_subalgorithm == MATH_SUBTYPES.subalgorithm19.ToString())
             {
-                if (!string.IsNullOrEmpty(pra1.IndicatorQT.Indicators[15])
-                    && pra1.IndicatorQT.Indicators[15] != Constants.NONE)
+                //run pra if needed
+                string sDistType = pra1.IndicatorQT.Indicators[15];
+                if (!string.IsNullOrEmpty(sDistType) && sDistType != Constants.NONE)
                 {
+                    pra1.IndicatorQT.QDistributionType = sDistType;
                     pra1.IndicatorQT.QT = CalculatorHelpers.ConvertStringToDouble(
                         pra1.IndicatorQT.Indicators[10]);
                     pra1.IndicatorQT.QTD1 = CalculatorHelpers.ConvertStringToDouble(
                         pra1.IndicatorQT.Indicators[11]);
                     pra1.IndicatorQT.QTD2 = CalculatorHelpers.ConvertStringToDouble(
                         pra1.IndicatorQT.Indicators[13]);
-                    pra1.IndicatorQT.QDistributionType = pra1.IndicatorQT.Indicators[15];
                     //don't save the result in MathResultURL
                     pra1.IndicatorQT.MathResult = string.Empty;
                     await pra1.RunAlgorithmAsync();
                 }
-                //oecd modified z-scores
+                //pra1.IndicatorQT.Q1, Q2, Q3 hold averages of certainties
+                pra1.IndicatorQT.Q1 = CalculatorHelpers.ConvertStringToDouble(
+                    pra1.IndicatorQT.Indicators[16]);
+                pra1.IndicatorQT.Q2 = CalculatorHelpers.ConvertStringToDouble(
+                    pra1.IndicatorQT.Indicators[17]);
+                pra1.IndicatorQT.Q3 = CalculatorHelpers.ConvertStringToDouble(
+                    pra1.IndicatorQT.Indicators[18]);
+                double dbTargetFlow = CalculatorHelpers.ConvertStringToDouble(
+                    pra1.IndicatorQT.Indicators[9]);
+                double dbTargetStock = CalculatorHelpers.ConvertStringToDouble(
+                   pra1.IndicatorQT.Indicators[8]);
+                double dbProxyMult = CalculatorHelpers.ConvertStringToDouble(
+                    pra1.IndicatorQT.Indicators[22]);
+                //make zero targets = 100%
+                if (dbTargetFlow == 0) dbTargetFlow = 100;
+                if (dbTargetStock == 0) dbTargetStock = 100;
+                //avoid zero multipliers
+                if (dbProxyMult == 0) dbProxyMult = 1;
+                //flow target percent = (actual flow / flow target) * 100
+                pra1.IndicatorQT.Q4 = (pra1.IndicatorQT.QTM / dbTargetFlow) * 100;
+                //actual ending stock for current period = (actual current flow + benchmark stock) * proxymultiplier (default = 1)  
+                pra1.IndicatorQT.QTM = (pra1.IndicatorQT.QTM + CalculatorHelpers.ConvertStringToDouble(
+                    pra1.IndicatorQT.Indicators[2])) * dbProxyMult;
+                pra1.IndicatorQT.QTL = (pra1.IndicatorQT.QTL + CalculatorHelpers.ConvertStringToDouble(
+                    pra1.IndicatorQT.Indicators[4])) * dbProxyMult;
+                pra1.IndicatorQT.QTU = (pra1.IndicatorQT.QTU + CalculatorHelpers.ConvertStringToDouble(
+                    pra1.IndicatorQT.Indicators[6])) * dbProxyMult;
+                //stock target = actual stock / stock target
+                pra1.IndicatorQT.Q5 = (pra1.IndicatorQT.QTM / dbTargetStock) * 100;
                 //lower and upper maintain % of qtm after norm
                 double dbQTL = pra1.IndicatorQT.QTL / pra1.IndicatorQT.QTM;
                 double dbQTU = pra1.IndicatorQT.QTU / pra1.IndicatorQT.QTM;
-                //(starting stock + actual flow - end stock target) / stock stand dev
-                pra1.IndicatorQT.QTM = ((pra1.IndicatorQT.QTM + CalculatorHelpers.ConvertStringToDouble(
-                    pra1.IndicatorQT.Indicators[10])) - CalculatorHelpers.ConvertStringToDouble(
-                    pra1.IndicatorQT.Indicators[8])) / CalculatorHelpers.ConvertStringToDouble(
+                //oecd modified z-scores
+                //normalized actual stock = (actual stock - end stock target) / stock stand dev
+                pra1.IndicatorQT.QTM = (pra1.IndicatorQT.QTM - CalculatorHelpers.ConvertStringToDouble(
+                   pra1.IndicatorQT.Indicators[8])) / CalculatorHelpers.ConvertStringToDouble(
                     pra1.IndicatorQT.Indicators[19]);
                 pra1.IndicatorQT.QTL = pra1.IndicatorQT.QTM * dbQTL;
                 pra1.IndicatorQT.QTU = pra1.IndicatorQT.QTM * dbQTU;
+                //targets, goals, and totals are straight summations of indicators
             }
             else
             {
@@ -2918,6 +2952,8 @@ namespace DevTreks.Extensions.Algorithms
                     catpra.Key.IndicatorQT.Q1 = 0;
                     catpra.Key.IndicatorQT.Q2 = 0;
                     catpra.Key.IndicatorQT.Q3 = 0;
+                    catpra.Key.IndicatorQT.Q4 = 0;
+                    catpra.Key.IndicatorQT.Q5 = 0;
                 }
                 List<PRA1> catcategories = new List<PRA1>();
                 foreach (var catpra in locationIndexes)
@@ -2941,6 +2977,12 @@ namespace DevTreks.Extensions.Algorithms
                             //certainty3
                             catpra.Key.IndicatorQT.Q3
                                  += cat.IndicatorQT.Q3 / catcategories.Count;
+                            //percent flow
+                            catpra.Key.IndicatorQT.Q4
+                                 += cat.IndicatorQT.Q4 / catcategories.Count;
+                            //percent stock
+                            catpra.Key.IndicatorQT.Q5
+                                 += cat.IndicatorQT.Q5 / catcategories.Count;
                         }
                         catcategories = new List<PRA1>();
                     }
@@ -2950,25 +2992,48 @@ namespace DevTreks.Extensions.Algorithms
                         foreach (var subpra in catpra.Value)
                         {
                             catpra.Key.IndicatorQT.QTM += subpra.IndicatorQT.QTM;
-                            //qtm units come from normd and wtd results so generic sdg per unit
-                            catpra.Key.IndicatorQT.QTMUnit = "normalized sd";
                             catpra.Key.IndicatorQT.QTL += subpra.IndicatorQT.QTL;
                             catpra.Key.IndicatorQT.QTU += subpra.IndicatorQT.QTU;
                             //certainty1
-                            subpra.IndicatorQT.Q1 = CalculatorHelpers.ConvertStringToDouble(
-                                    subpra.IndicatorQT.Indicators[16]);
                             catpra.Key.IndicatorQT.Q1
                                 += (subpra.IndicatorQT.Q1 / catpra.Value.Count);
                             //certainty2
-                            subpra.IndicatorQT.Q2 = CalculatorHelpers.ConvertStringToDouble(
-                                    subpra.IndicatorQT.Indicators[17]);
                             catpra.Key.IndicatorQT.Q2
                                 += (subpra.IndicatorQT.Q2 / catpra.Value.Count);
                             //certainty3
-                            subpra.IndicatorQT.Q3 = CalculatorHelpers.ConvertStringToDouble(
-                                    subpra.IndicatorQT.Indicators[18]);
                             catpra.Key.IndicatorQT.Q3
                                 += (subpra.IndicatorQT.Q3 / catpra.Value.Count);
+                            //percent flow
+                            catpra.Key.IndicatorQT.Q4
+                                += (subpra.IndicatorQT.Q4 / catpra.Value.Count);
+                            //percent stock
+                            catpra.Key.IndicatorQT.Q5
+                                += (subpra.IndicatorQT.Q5 / catpra.Value.Count);
+                            ////certainty1
+                            //subpra.IndicatorQT.Q1 = CalculatorHelpers.ConvertStringToDouble(
+                            //        subpra.IndicatorQT.Indicators[16]);
+                            //catpra.Key.IndicatorQT.Q1
+                            //    += (subpra.IndicatorQT.Q1 / catpra.Value.Count);
+                            ////certainty2
+                            //subpra.IndicatorQT.Q2 = CalculatorHelpers.ConvertStringToDouble(
+                            //        subpra.IndicatorQT.Indicators[17]);
+                            //catpra.Key.IndicatorQT.Q2
+                            //    += (subpra.IndicatorQT.Q2 / catpra.Value.Count);
+                            ////certainty3
+                            //subpra.IndicatorQT.Q3 = CalculatorHelpers.ConvertStringToDouble(
+                            //        subpra.IndicatorQT.Indicators[18]);
+                            //catpra.Key.IndicatorQT.Q3
+                            //    += (subpra.IndicatorQT.Q3 / catpra.Value.Count);
+                            ////percent flow
+                            //subpra.IndicatorQT.Q4 = CalculatorHelpers.ConvertStringToDouble(
+                            //        subpra.IndicatorQT.Indicators[9]);
+                            //catpra.Key.IndicatorQT.Q4
+                            //    += (subpra.IndicatorQT.Q4 / catpra.Value.Count);
+                            ////percent stock
+                            //subpra.IndicatorQT.Q5 = CalculatorHelpers.ConvertStringToDouble(
+                            //        subpra.IndicatorQT.Indicators[8]);
+                            //catpra.Key.IndicatorQT.Q5
+                            //    += (subpra.IndicatorQT.Q5 / catpra.Value.Count);
                             i++;
                             rStart++;
                         }
@@ -4442,15 +4507,23 @@ namespace DevTreks.Extensions.Algorithms
                         }
                         else if (c == 6)
                         {
-                            DataResults[i][c + iColCount] = catpra.Key.IndicatorQT.Q1.ToString("0.0##E+00", CultureInfo.InvariantCulture);
+                            DataResults[i][c + iColCount] = catpra.Key.IndicatorQT.Q1.ToString("F4", CultureInfo.InvariantCulture);
                         }
                         else if (c == 7)
                         {
-                            DataResults[i][c + iColCount] = catpra.Key.IndicatorQT.Q2.ToString("0.0##E+00", CultureInfo.InvariantCulture);
+                            DataResults[i][c + iColCount] = catpra.Key.IndicatorQT.Q2.ToString("F4", CultureInfo.InvariantCulture);
                         }
                         else if (c == 8)
                         {
-                            DataResults[i][c + iColCount] = catpra.Key.IndicatorQT.Q3.ToString("0.0##E+00", CultureInfo.InvariantCulture);
+                            DataResults[i][c + iColCount] = catpra.Key.IndicatorQT.Q3.ToString("F4", CultureInfo.InvariantCulture);
+                        }
+                        else if (c == 9)
+                        {
+                            DataResults[i][c + iColCount] = catpra.Key.IndicatorQT.Q4.ToString("F4", CultureInfo.InvariantCulture);
+                        }
+                        else if (c == 10)
+                        {
+                            DataResults[i][c + iColCount] = catpra.Key.IndicatorQT.Q5.ToString("F4", CultureInfo.InvariantCulture);
                         }
                     }
                     i++;
@@ -4486,15 +4559,23 @@ namespace DevTreks.Extensions.Algorithms
                             }
                             else if (c == 6)
                             {
-                                DataResults[i][c + iColCount] = subpra.IndicatorQT.Q1.ToString("0.0##E+00", CultureInfo.InvariantCulture);
+                                DataResults[i][c + iColCount] = subpra.IndicatorQT.Q1.ToString("F4", CultureInfo.InvariantCulture);
                             }
                             else if (c == 7)
                             {
-                                DataResults[i][c + iColCount] = subpra.IndicatorQT.Q2.ToString("0.0##E+00", CultureInfo.InvariantCulture);
+                                DataResults[i][c + iColCount] = subpra.IndicatorQT.Q2.ToString("F4", CultureInfo.InvariantCulture);
                             }
                             else if (c == 8)
                             {
-                                DataResults[i][c + iColCount] = subpra.IndicatorQT.Q3.ToString("0.0##E+00", CultureInfo.InvariantCulture);
+                                DataResults[i][c + iColCount] = subpra.IndicatorQT.Q3.ToString("F4", CultureInfo.InvariantCulture);
+                            }
+                            else if (c == 9)
+                            {
+                                DataResults[i][c + iColCount] = subpra.IndicatorQT.Q4.ToString("F4", CultureInfo.InvariantCulture);
+                            }
+                            else if (c == 10)
+                            {
+                                DataResults[i][c + iColCount] = subpra.IndicatorQT.Q5.ToString("F4", CultureInfo.InvariantCulture);
                             }
                         }
                         i++;
@@ -5037,6 +5118,8 @@ namespace DevTreks.Extensions.Algorithms
                 tr.Q1 += (rf.Q1 / thirdIndicator.IndicatorQT1s.Count);
                 tr.Q2 += (rf.Q2 / thirdIndicator.IndicatorQT1s.Count);
                 tr.Q3 += (rf.Q3 / thirdIndicator.IndicatorQT1s.Count);
+                tr.Q4 += (rf.Q4 / thirdIndicator.IndicatorQT1s.Count);
+                tr.Q5 += (rf.Q5 / thirdIndicator.IndicatorQT1s.Count);
                 //add it the locationsindicator for display of Qs
                 locationIndicator.QTM += rf.QTM;
                 locationIndicator.QTMUnit = rf.QTMUnit;
@@ -5047,13 +5130,15 @@ namespace DevTreks.Extensions.Algorithms
                 locationIndicator.Q1 += (rf.Q1 / thirdIndicator.IndicatorQT1s.Count);
                 locationIndicator.Q2 += (rf.Q2 / thirdIndicator.IndicatorQT1s.Count);
                 locationIndicator.Q3 += (rf.Q3 / thirdIndicator.IndicatorQT1s.Count);
+                locationIndicator.Q4 += (rf.Q4 / thirdIndicator.IndicatorQT1s.Count);
+                locationIndicator.Q5 += (rf.Q5 / thirdIndicator.IndicatorQT1s.Count);
             }
-            int iNewColCount = colCount - 9;
+            int iNewColCount = colCount - 11;
             for (int c = 0; c < colCount; c++)
             {
                 if (c == 0)
                 {
-                    DataResults[trIndex][c + iNewColCount] = tr.QTM.ToString("F4", CultureInfo.InvariantCulture);
+                    DataResults[trIndex][c + iNewColCount] = tr.QTM.ToString("0.0##E+00", CultureInfo.InvariantCulture);
                 }
                 else if (c == 1)
                 {
@@ -5061,7 +5146,7 @@ namespace DevTreks.Extensions.Algorithms
                 }
                 else if (c == 2)
                 {
-                    DataResults[trIndex][c + iNewColCount] = tr.QTL.ToString("F4", CultureInfo.InvariantCulture);
+                    DataResults[trIndex][c + iNewColCount] = tr.QTL.ToString("0.0##E+00", CultureInfo.InvariantCulture);
                 }
                 else if (c == 3)
                 {
@@ -5069,7 +5154,7 @@ namespace DevTreks.Extensions.Algorithms
                 }
                 else if (c == 4)
                 {
-                    DataResults[trIndex][c + iNewColCount] = tr.QTU.ToString("F4", CultureInfo.InvariantCulture);
+                    DataResults[trIndex][c + iNewColCount] = tr.QTU.ToString("0.0##E+00", CultureInfo.InvariantCulture);
                 }
                 else if (c == 5)
                 {
@@ -5086,6 +5171,14 @@ namespace DevTreks.Extensions.Algorithms
                 else if (c == 8)
                 {
                     DataResults[trIndex][c + iNewColCount] = tr.Q3.ToString("F4", CultureInfo.InvariantCulture);
+                }
+                else if (c == 9)
+                {
+                    DataResults[trIndex][c + iNewColCount] = tr.Q4.ToString("F4", CultureInfo.InvariantCulture);
+                }
+                else if (c == 10)
+                {
+                    DataResults[trIndex][c + iNewColCount] = tr.Q5.ToString("F4", CultureInfo.InvariantCulture);
                 }
             }
         }
@@ -5768,7 +5861,7 @@ namespace DevTreks.Extensions.Algorithms
                 locationIndicator.IndicatorQT1s = new List<IndicatorQT1>();
             }
             locationIndicator.IndicatorQT1s.Add(scoreIndicator);
-            int iColCount = DataResults[0].Count() - 9;
+            int iColCount = DataResults[0].Count() - 11;
             //fills in the locationindex in the exact same matrix position as the distribution
             for (int c = 0; c <= 10; c++)
             {
@@ -5798,15 +5891,23 @@ namespace DevTreks.Extensions.Algorithms
                 }
                 else if (c == 6)
                 {
-                    DataResults[scoreIndex][c + iColCount] = scoreIndicator.Q1.ToString("0.0##E+00", CultureInfo.InvariantCulture);
+                    DataResults[scoreIndex][c + iColCount] = scoreIndicator.Q1.ToString("F4", CultureInfo.InvariantCulture);
                 }
                 else if (c == 7)
                 {
-                    DataResults[scoreIndex][c + iColCount] = scoreIndicator.Q2.ToString("0.0##E+00", CultureInfo.InvariantCulture);
+                    DataResults[scoreIndex][c + iColCount] = scoreIndicator.Q2.ToString("F4", CultureInfo.InvariantCulture);
                 }
                 else if (c == 8)
                 {
-                    DataResults[scoreIndex][c + iColCount] = scoreIndicator.Q3.ToString("0.0##E+00", CultureInfo.InvariantCulture);
+                    DataResults[scoreIndex][c + iColCount] = scoreIndicator.Q3.ToString("F4", CultureInfo.InvariantCulture);
+                }
+                else if (c == 9)
+                {
+                    DataResults[scoreIndex][c + iColCount] = scoreIndicator.Q4.ToString("F4", CultureInfo.InvariantCulture);
+                }
+                else if (c == 10)
+                {
+                    DataResults[scoreIndex][c + iColCount] = scoreIndicator.Q5.ToString("F4", CultureInfo.InvariantCulture);
                 }
             }
         }
@@ -6856,22 +6957,24 @@ namespace DevTreks.Extensions.Algorithms
             }
             else if (_subalgorithm == MATH_SUBTYPES.subalgorithm19.ToString())
             {
-                //22 initial params plus 9 new cols with results
-                int iNewColCount = ColNames.Count() + 9;
+                //22 initial params plus 11 new cols with results
+                int iNewColCount = ColNames.Count() + 11;
                 string[] newColNames = new string[iNewColCount];
                 for (int i = 0; i < ColNames.Count(); i++)
                 {
                     newColNames[i] = ColNames[i];
                 }
-                newColNames[iNewColCount - 9] = "qtmost";
-                newColNames[iNewColCount - 8] = "qtmostunit";
-                newColNames[iNewColCount - 7] = "qtlow";
-                newColNames[iNewColCount - 6] = "qtlowunit";
-                newColNames[iNewColCount - 5] = "qthigh";
-                newColNames[iNewColCount - 4] = "qthighunit";
-                newColNames[iNewColCount - 3] = "certainty1";
-                newColNames[iNewColCount - 2] = "certainty2";
-                newColNames[iNewColCount - 1] = "certainty3";
+                newColNames[iNewColCount - 11] = "qtmost";
+                newColNames[iNewColCount - 10] = "qtmostunit";
+                newColNames[iNewColCount - 9] = "qtlow";
+                newColNames[iNewColCount - 8] = "qtlowunit";
+                newColNames[iNewColCount - 7] = "qthigh";
+                newColNames[iNewColCount - 6] = "qthighunit";
+                newColNames[iNewColCount - 5] = "certainty1";
+                newColNames[iNewColCount - 4] = "certainty2";
+                newColNames[iNewColCount - 3] = "certainty3";
+                newColNames[iNewColCount - 2] = "percentflow";
+                newColNames[iNewColCount - 1] = "percentstock";
                 ColNames = newColNames;
             }
             else
