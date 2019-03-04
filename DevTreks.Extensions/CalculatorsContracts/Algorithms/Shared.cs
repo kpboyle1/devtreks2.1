@@ -938,6 +938,7 @@ namespace DevTreks.Extensions.Algorithms
             sb.Append(spaces.Substring(0, iLengthMissing));
             return sb.ToString();
         }
+      
 
         public static double GetNormalizedValue(string subIndNormType, double startValue,
             MathNet.Numerics.Statistics.DescriptiveStatistics stats)

@@ -12,7 +12,7 @@ namespace DevTreks.Extensions.Algorithms
     /// <summary>
     ///Purpose:		DRR2 algorithm
     ///Author:		www.devtreks.org
-    ///Date:		2019, February
+    ///Date:		2019, March
     ///References:	CTA algo1, CTAP subalgo 9, 10, 11, 12, RCA subalgo 13, 14, 15, 16, 17, 18, 19
     ///</summary>
     public class DRR2 : DRR1
@@ -2414,6 +2414,7 @@ namespace DevTreks.Extensions.Algorithms
                 if (!string.IsNullOrEmpty(sDistType) && sDistType != Constants.NONE)
                 {
                     pra1.IndicatorQT.QDistributionType = sDistType;
+                    //actual measured flow
                     pra1.IndicatorQT.QT = CalculatorHelpers.ConvertStringToDouble(
                         pra1.IndicatorQT.Indicators[10]);
                     pra1.IndicatorQT.QTD1 = CalculatorHelpers.ConvertStringToDouble(
@@ -2422,7 +2423,18 @@ namespace DevTreks.Extensions.Algorithms
                         pra1.IndicatorQT.Indicators[13]);
                     //don't save the result in MathResultURL
                     pra1.IndicatorQT.MathResult = string.Empty;
+                    //calcs qtm, qtl, and qtu
                     await pra1.RunAlgorithmAsync();
+                }
+                else
+                {
+                    //actual measured flow that will be added to the benchmark stock when norms calcd
+                    pra1.IndicatorQT.QTM = CalculatorHelpers.ConvertStringToDouble(
+                        pra1.IndicatorQT.Indicators[10]);
+                    pra1.IndicatorQT.QTL = CalculatorHelpers.ConvertStringToDouble(
+                        pra1.IndicatorQT.Indicators[11]);
+                    pra1.IndicatorQT.QTU = CalculatorHelpers.ConvertStringToDouble(
+                        pra1.IndicatorQT.Indicators[13]);
                 }
                 //pra1.IndicatorQT.Q1, Q2, Q3 hold averages of certainties
                 pra1.IndicatorQT.Q1 = CalculatorHelpers.ConvertStringToDouble(
@@ -2435,35 +2447,20 @@ namespace DevTreks.Extensions.Algorithms
                     pra1.IndicatorQT.Indicators[9]);
                 double dbTargetStock = CalculatorHelpers.ConvertStringToDouble(
                    pra1.IndicatorQT.Indicators[8]);
-                double dbProxyMult = CalculatorHelpers.ConvertStringToDouble(
-                    pra1.IndicatorQT.Indicators[22]);
                 //make zero targets = 100%
                 if (dbTargetFlow == 0) dbTargetFlow = 100;
                 if (dbTargetStock == 0) dbTargetStock = 100;
-                //avoid zero multipliers
-                if (dbProxyMult == 0) dbProxyMult = 1;
                 //flow target percent = (actual flow / flow target) * 100
                 pra1.IndicatorQT.Q4 = (pra1.IndicatorQT.QTM / dbTargetFlow) * 100;
-                //actual ending stock for current period = (actual current flow + benchmark stock) * proxymultiplier (default = 1)  
+                //actual ending stock for current period = (actual current flow + benchmark stock)  
                 pra1.IndicatorQT.QTM = (pra1.IndicatorQT.QTM + CalculatorHelpers.ConvertStringToDouble(
-                    pra1.IndicatorQT.Indicators[2])) * dbProxyMult;
+                    pra1.IndicatorQT.Indicators[2]));
                 pra1.IndicatorQT.QTL = (pra1.IndicatorQT.QTL + CalculatorHelpers.ConvertStringToDouble(
-                    pra1.IndicatorQT.Indicators[4])) * dbProxyMult;
+                    pra1.IndicatorQT.Indicators[4]));
                 pra1.IndicatorQT.QTU = (pra1.IndicatorQT.QTU + CalculatorHelpers.ConvertStringToDouble(
-                    pra1.IndicatorQT.Indicators[6])) * dbProxyMult;
+                    pra1.IndicatorQT.Indicators[6]));
                 //stock target = actual stock / stock target
                 pra1.IndicatorQT.Q5 = (pra1.IndicatorQT.QTM / dbTargetStock) * 100;
-                //lower and upper maintain % of qtm after norm
-                double dbQTL = pra1.IndicatorQT.QTL / pra1.IndicatorQT.QTM;
-                double dbQTU = pra1.IndicatorQT.QTU / pra1.IndicatorQT.QTM;
-                //oecd modified z-scores
-                //normalized actual stock = (actual stock - end stock target) / stock stand dev
-                pra1.IndicatorQT.QTM = (pra1.IndicatorQT.QTM - CalculatorHelpers.ConvertStringToDouble(
-                   pra1.IndicatorQT.Indicators[8])) / CalculatorHelpers.ConvertStringToDouble(
-                    pra1.IndicatorQT.Indicators[19]);
-                pra1.IndicatorQT.QTL = pra1.IndicatorQT.QTM * dbQTL;
-                pra1.IndicatorQT.QTU = pra1.IndicatorQT.QTM * dbQTU;
-                //targets, goals, and totals are straight summations of indicators
             }
             else
             {
@@ -2887,7 +2884,7 @@ namespace DevTreks.Extensions.Algorithms
                             subpra.IndicatorQT.QTM = nQTMs[i] * dbWt;
                             catpra.Key.IndicatorQT.QTM += subpra.IndicatorQT.QTM;
                             //qtm units come from normd and wtd results so generic sdg per unit
-                            catpra.Key.IndicatorQT.QTMUnit = "sdg per pop unit";
+                            //catpra.Key.IndicatorQT.QTMUnit = "sdg per pop unit";
                             subpra.IndicatorQT.QTL = nQTLs[i] * dbWt;
                             catpra.Key.IndicatorQT.QTL += subpra.IndicatorQT.QTL;
                             subpra.IndicatorQT.QTU = nQTUs[i] * dbWt; 
@@ -2935,7 +2932,15 @@ namespace DevTreks.Extensions.Algorithms
             List<string> dataR, int r, IndicatorQT1 locationIndicator)
         {
             bool bHasCompleted = false;
-            //subalgo 19 already normalized on calcsubinds
+            //init vars
+            List<List<double>> trends = new List<List<double>>();
+            List<double> nQTMs = new List<double>();
+            List<double> nQTLs = new List<double>();
+            List<double> nQTUs = new List<double>();
+            //weights
+            List<double> nWts = new List<double>();
+            bool bNeedsWeight = await SetNormalizations(trends, locationIndexes,
+               nQTMs, nQTLs, nQTUs, nWts);
             int i = 0;
             int rStart = 0;
             //both algos share props, subalgo18 has no costs but no harm in running cost calc
@@ -2964,8 +2969,6 @@ namespace DevTreks.Extensions.Algorithms
                         foreach (var cat in catcategories)
                         {
                             catpra.Key.IndicatorQT.QTM += cat.IndicatorQT.QTM;
-                            //qtm units come from normd and wtd results so generic sdg per unit
-                            catpra.Key.IndicatorQT.QTMUnit = "sdg per pop unit";
                             catpra.Key.IndicatorQT.QTL += cat.IndicatorQT.QTL;
                             catpra.Key.IndicatorQT.QTU += cat.IndicatorQT.QTU;
                             //certainty1
@@ -2991,9 +2994,32 @@ namespace DevTreks.Extensions.Algorithms
                         //indicators
                         foreach (var subpra in catpra.Value)
                         {
-                            catpra.Key.IndicatorQT.QTM += subpra.IndicatorQT.QTM;
-                            catpra.Key.IndicatorQT.QTL += subpra.IndicatorQT.QTL;
-                            catpra.Key.IndicatorQT.QTU += subpra.IndicatorQT.QTU;
+                            string sNormType = subpra.IndicatorQT.Indicators[19];
+
+                            if (sNormType 
+                                == CalculatorHelpers.NORMALIZATION_TYPES.modzscore.ToString())
+                            {
+                                catpra.Key.IndicatorQT.QTM += subpra.IndicatorQT.QTM;
+                                catpra.Key.IndicatorQT.QTL += subpra.IndicatorQT.QTL;
+                                catpra.Key.IndicatorQT.QTU += subpra.IndicatorQT.QTU;
+                            }
+                            else
+                            {
+                                //replace each catindex with normalized and weighted result
+                                double dbWt = 1;
+                                if (bNeedsWeight)
+                                {
+                                    dbWt = nWts[i];
+                                }
+                                //note that the weight factor is used as a multiplier (1 / population)
+                                subpra.IndicatorQT.QTM = nQTMs[i] * dbWt;
+                                catpra.Key.IndicatorQT.QTM += subpra.IndicatorQT.QTM;
+                                //qtm units come from normd and wtd results so generic sdg per unit;
+                                subpra.IndicatorQT.QTL = nQTLs[i] * dbWt;
+                                catpra.Key.IndicatorQT.QTL += subpra.IndicatorQT.QTL;
+                                subpra.IndicatorQT.QTU = nQTUs[i] * dbWt;
+                                catpra.Key.IndicatorQT.QTU += subpra.IndicatorQT.QTU;
+                            }
                             //certainty1
                             catpra.Key.IndicatorQT.Q1
                                 += (subpra.IndicatorQT.Q1 / catpra.Value.Count);
@@ -3009,31 +3035,6 @@ namespace DevTreks.Extensions.Algorithms
                             //percent stock
                             catpra.Key.IndicatorQT.Q5
                                 += (subpra.IndicatorQT.Q5 / catpra.Value.Count);
-                            ////certainty1
-                            //subpra.IndicatorQT.Q1 = CalculatorHelpers.ConvertStringToDouble(
-                            //        subpra.IndicatorQT.Indicators[16]);
-                            //catpra.Key.IndicatorQT.Q1
-                            //    += (subpra.IndicatorQT.Q1 / catpra.Value.Count);
-                            ////certainty2
-                            //subpra.IndicatorQT.Q2 = CalculatorHelpers.ConvertStringToDouble(
-                            //        subpra.IndicatorQT.Indicators[17]);
-                            //catpra.Key.IndicatorQT.Q2
-                            //    += (subpra.IndicatorQT.Q2 / catpra.Value.Count);
-                            ////certainty3
-                            //subpra.IndicatorQT.Q3 = CalculatorHelpers.ConvertStringToDouble(
-                            //        subpra.IndicatorQT.Indicators[18]);
-                            //catpra.Key.IndicatorQT.Q3
-                            //    += (subpra.IndicatorQT.Q3 / catpra.Value.Count);
-                            ////percent flow
-                            //subpra.IndicatorQT.Q4 = CalculatorHelpers.ConvertStringToDouble(
-                            //        subpra.IndicatorQT.Indicators[9]);
-                            //catpra.Key.IndicatorQT.Q4
-                            //    += (subpra.IndicatorQT.Q4 / catpra.Value.Count);
-                            ////percent stock
-                            //subpra.IndicatorQT.Q5 = CalculatorHelpers.ConvertStringToDouble(
-                            //        subpra.IndicatorQT.Indicators[8]);
-                            //catpra.Key.IndicatorQT.Q5
-                            //    += (subpra.IndicatorQT.Q5 / catpra.Value.Count);
                             i++;
                             rStart++;
                         }
@@ -3194,6 +3195,48 @@ namespace DevTreks.Extensions.Algorithms
                             qtWts.Add(subpra.IndicatorQT.Q6);
                         }
                     }
+                    else if (_subalgorithm == MATH_SUBTYPES.subalgorithm19.ToString())
+                    {
+                        foreach (var subpra in catpra.Value)
+                        {
+                            //set norm params
+                            if (subpra.IndicatorQT.Indicators.Count() >= 21)
+                            {
+                                sNormType = SetNormalizationType(subpra.IndicatorQT.Indicators[19], sNormType, qtNs);
+                                if (sNormType == CalculatorHelpers.NORMALIZATION_TYPES.modzscore.ToString())
+                                {
+                                    //lower and upper maintain % of qtm after norm
+                                    double dbQTL = subpra.IndicatorQT.QTL / subpra.IndicatorQT.QTM;
+                                    double dbQTU = subpra.IndicatorQT.QTU / subpra.IndicatorQT.QTM;
+                                    double dbEndTarget = CalculatorHelpers.ConvertStringToDouble(
+                                       subpra.IndicatorQT.Indicators[8]);
+                                    double dbStdDev = CalculatorHelpers.ConvertStringToDouble(
+                                        subpra.IndicatorQT.Indicators[20]);
+                                    //oecd modified z-scores
+                                    //normalized actual stock = (actual stock - end stock target) / stock stand dev
+                                    subpra.IndicatorQT.QTM = (subpra.IndicatorQT.QTM - dbEndTarget) / dbStdDev;
+                                    subpra.IndicatorQT.QTL = subpra.IndicatorQT.QTM * dbQTL;
+                                    subpra.IndicatorQT.QTU = subpra.IndicatorQT.QTM * dbQTU;
+                                    //targets, goals, and totals are straight summations of indicators
+                                    bNeedsWeight = false;
+                                }
+                                else
+                                {
+                                    //regular norm techniques
+                                    qtMs.Add(subpra.IndicatorQT.QTM);
+                                    //add all of the vectors to 1 vector so that normaliz shows more differences in cis
+                                    qtLs.Add(subpra.IndicatorQT.QTL);
+                                    qtUs.Add(subpra.IndicatorQT.QTU);
+                                    double dbWt = CalculatorHelpers.ConvertStringToDouble(
+                                        subpra.IndicatorQT.Indicators[20]);
+                                    if (dbWt == 0) dbWt = 1;
+                                    //weights for normalizs
+                                    qtWts.Add(dbWt);
+                                }
+                                
+                            }
+                        }
+                    }
                     else
                     {
                         //normalize, weight, and sum indicators
@@ -3215,8 +3258,11 @@ namespace DevTreks.Extensions.Algorithms
                         }
                     }
                 }
-                bNeedsWeight = await SetNormalizations2(sNormType, trends, 
-                    nQTMs, nQTLs, nQTUs, nWts, qtMs, qtLs, qtUs, qtWts, qtNs);
+                if (sNormType != CalculatorHelpers.NORMALIZATION_TYPES.modzscore.ToString())
+                {
+                    bNeedsWeight = await SetNormalizations2(sNormType, trends,
+                        nQTMs, nQTLs, nQTUs, nWts, qtMs, qtLs, qtUs, qtWts, qtNs);
+                }
             }
             return bNeedsWeight;
         }
@@ -3295,10 +3341,6 @@ namespace DevTreks.Extensions.Algorithms
                             nWts[o] = qtWts[o];
                         }
                     }
-                    //nQTMs = new List<double>();
-                    //nQTLs = new List<double>();
-                    //nQTUs = new List<double>();
-                    //nWts = new List<double>();
                 }
                 else
                 {
@@ -3307,18 +3349,7 @@ namespace DevTreks.Extensions.Algorithms
                     nQTUs.AddRange(nQTs.SubVector((iCount + iCount), iCount).ToList());
                     nWts.AddRange(qtWts);
                 }
-
-                //if (nQTMs.Count > 0)
-                //{
-                //    nQTMs = new List<double>();
-                //    nQTLs = new List<double>();
-                //    nQTUs = new List<double>();
-                //    nWts = new List<double>();
-                //}
-                //nQTMs.AddRange(nQTs.SubVector(0, iCount).ToList());
-                //nQTLs.AddRange(nQTs.SubVector(iCount, iCount).ToList());
-                //nQTUs.AddRange(nQTs.SubVector((iCount + iCount), iCount).ToList());
-                //nWts.AddRange(qtWts);
+                
                 if (_subalgorithm == MATH_SUBTYPES.subalgorithm14.ToString())
                 {
                     List<List<double>> trends2 = Shared.GetNormalizedandWeightedLists(normType, start, bScale,

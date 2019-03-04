@@ -19,7 +19,7 @@ namespace DevTreks.Extensions
     /// <summary>
     ///Purpose:		Helper utilities used by the DoStepsAddInView's extension calculators.
     ///Author:		www.devtreks.org
-    ///Date:		2018, May
+    ///Date:		2019, March
     ///References:	
     ///NOTES:
     ///             1. This class is an extension's only communication link 
@@ -130,7 +130,9 @@ namespace DevTreks.Extensions
             qcategory   = 9,
             qindex      = 10,
             qtext       = 11,
-            text       = 12
+            text        = 12,
+            //new in version 218 -OECD modified zscore
+            modzscore   = 13
         }
         public static NORMALIZATION_TYPES GetNormalizationType(string normType)
         {
