@@ -13,7 +13,7 @@ namespace DevTreks.Extensions
     /// <summary>
     ///Purpose:		Add monitoring and evaluation indicators to DevTreks input, 
     ///             output, operation/component, outcome, and budget elements. 
-    ///Date:		2018, September 
+    ///Date:		2019, March
     ///References:	Monitoring and Evaluation Tutorials
     ///NOTES:       Version 2.0.4 upgraded to similar properties and methods as 
     ///             the ResourceStockCalculator to promote consistency in the use 
@@ -1400,7 +1400,8 @@ namespace DevTreks.Extensions
                 || HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm15)
                 || HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm16)
                 || HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm17)
-                || HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm18))
+                || HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm18)
+                || HasMathType(indicatorIndex, MATH_TYPES.algorithm1, MATH_SUBTYPES.subalgorithm19))
             {
                 //212 Score analysis
                 if (indicatorIndex == 0

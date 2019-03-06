@@ -2447,11 +2447,13 @@ namespace DevTreks.Extensions.Algorithms
                     pra1.IndicatorQT.Indicators[9]);
                 double dbTargetStock = CalculatorHelpers.ConvertStringToDouble(
                    pra1.IndicatorQT.Indicators[8]);
-                //make zero targets = 100%
-                if (dbTargetFlow == 0) dbTargetFlow = 100;
-                if (dbTargetStock == 0) dbTargetStock = 100;
+                //assume no zero targets
                 //flow target percent = (actual flow / flow target) * 100
-                pra1.IndicatorQT.Q4 = (pra1.IndicatorQT.QTM / dbTargetFlow) * 100;
+                if (dbTargetFlow != 0)
+                {
+                    pra1.IndicatorQT.Q4 = (pra1.IndicatorQT.QTM / dbTargetFlow) * 100;
+                    //else is default 0
+                }
                 //actual ending stock for current period = (actual current flow + benchmark stock)  
                 pra1.IndicatorQT.QTM = (pra1.IndicatorQT.QTM + CalculatorHelpers.ConvertStringToDouble(
                     pra1.IndicatorQT.Indicators[2]));
@@ -2460,7 +2462,11 @@ namespace DevTreks.Extensions.Algorithms
                 pra1.IndicatorQT.QTU = (pra1.IndicatorQT.QTU + CalculatorHelpers.ConvertStringToDouble(
                     pra1.IndicatorQT.Indicators[6]));
                 //stock target = actual stock / stock target
-                pra1.IndicatorQT.Q5 = (pra1.IndicatorQT.QTM / dbTargetStock) * 100;
+                if (dbTargetStock != 0)
+                {
+                    pra1.IndicatorQT.Q5 = (pra1.IndicatorQT.QTM / dbTargetStock) * 100;
+                    //else is default 0
+                }
             }
             else
             {
