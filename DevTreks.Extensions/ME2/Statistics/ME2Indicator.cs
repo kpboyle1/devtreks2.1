@@ -13,7 +13,7 @@ namespace DevTreks.Extensions
     /// <summary>
     ///Purpose:		Add monitoring and evaluation indicators to DevTreks input, 
     ///             output, operation/component, outcome, and budget elements. 
-    ///Date:		2019, March
+    ///Date:		2019, April
     ///References:	Monitoring and Evaluation Tutorials
     ///NOTES:       Version 2.0.4 upgraded to similar properties and methods as 
     ///             the ResourceStockCalculator to promote consistency in the use 
@@ -81,7 +81,8 @@ namespace DevTreks.Extensions
         //list of indicators 
         public List<ME2Indicator> ME2Indicators = new List<ME2Indicator>();
         //maximum limit for reasonable serialization (zero based, so 15 + score)
-        private int MaximumNumberOfME2Indicators = 15;
+        //218: changed from 15 to 16 for ind15
+        private int MaximumNumberOfME2Indicators = 16;
         //base io to update
         public enum BASEIO_TYPES
         {

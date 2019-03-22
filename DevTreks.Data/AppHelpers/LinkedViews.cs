@@ -18,13 +18,14 @@ namespace DevTreks.Data.AppHelpers
     ///             for economics analyses, calculations, custom linkedviews, 
     ///             and other xml apps.
     ///Author:		www.devtreks.org
-    ///Date:		2016, May
+    ///Date:		2019, April
     ///References:	www.devtreks.org/helptreks/linkedviews/help/linkedview/HelpFile/148
-    ///NOTE:        1. This class has two primary roles:
+    ///NOTE:        1. This class has three primary roles:
     ///                 a. Linking apps to calculators, analyzers 
     ///                     and story-tellers (i.e. ebook packagers).
     ///                 b. Holding stand-alone xml docs that serve as explanations 
     ///                     accompanying calculations, analyses and stories. 
+    ///                 c. Version 218: why software developers should not also be final software testers
     /// </summary>
     public class LinkedViews
     {
@@ -1218,13 +1219,14 @@ namespace DevTreks.Data.AppHelpers
                     sLinkedView = arrLinkedView[i].Trim();
                     if (!string.IsNullOrEmpty(sLinkedView))
                     {
-                        arrLinkedView = sLinkedView.Split(Helpers.GeneralHelpers.STRING_DELIMITERS);
-                        if (arrLinkedView != null)
+                        //218 bug fix: that's why it takes software testers
+                        string[] arrLinkedView2 = sLinkedView.Split(Helpers.GeneralHelpers.STRING_DELIMITERS);
+                        if (arrLinkedView2 != null)
                         {
-                            if (arrLinkedView.Length > 1)
+                            if (arrLinkedView2.Length > 1)
                             {
-                                sLinkingNodeId = arrLinkedView[0];
-                                sNewLinkedViewJoinId = arrLinkedView[1];
+                                sLinkingNodeId = arrLinkedView2[0];
+                                sNewLinkedViewJoinId = arrLinkedView2[1];
                                 foreach (KeyValuePair<string, string> kvp in linkedViewsInserted)
                                 {
                                     sLinkingNodeURIPattern = kvp.Key;
@@ -1255,6 +1257,64 @@ namespace DevTreks.Data.AppHelpers
                 }
             }
         }
+        //public void GetNewLinkedView(IDictionary<string, string> linkedViewsInserted,
+        //    string insertedIdsArray, ref IDictionary<string, string> newLinkedViewInserted)
+        //{
+        //    string[] arrLinkedView = insertedIdsArray.Split(Helpers.GeneralHelpers.PARAMETER_DELIMITERS);
+        //    string[] arrLinkedViews = { };
+        //    if (arrLinkedView != null)
+        //    {
+        //        int i = 0;
+        //        string sLinkedView = string.Empty;
+        //        string sLinkingNodeId = string.Empty;
+        //        string sLinkingNodeId2 = string.Empty;
+        //        string sLinkingNodeURIPattern = string.Empty;
+        //        string sLinkingNodeName = string.Empty;
+        //        string sNewLinkedViewJoinId = string.Empty;
+        //        string sSelectedURIPattern = string.Empty;
+        //        string sNewSelectedURIPattern = string.Empty;
+        //        for (i = 0; i < arrLinkedView.Count(); i++)
+        //        {
+        //            sLinkedView = arrLinkedView[i].Trim();
+        //            if (!string.IsNullOrEmpty(sLinkedView))
+        //            {
+        //                arrLinkedView = sLinkedView.Split(Helpers.GeneralHelpers.STRING_DELIMITERS);
+        //                if (arrLinkedView != null)
+        //                {
+        //                    if (arrLinkedView.Length > 1)
+        //                    {
+        //                        sLinkingNodeId = arrLinkedView[0];
+        //                        sNewLinkedViewJoinId = arrLinkedView[1];
+        //                        foreach (KeyValuePair<string, string> kvp in linkedViewsInserted)
+        //                        {
+        //                            sLinkingNodeURIPattern = kvp.Key;
+        //                            if (!string.IsNullOrEmpty(sLinkingNodeURIPattern))
+        //                            {
+        //                                sLinkingNodeId2 = ContentURI.GetURIPatternPart(sLinkingNodeURIPattern,
+        //                                    ContentURI.URIPATTERNPART.id);
+        //                                if (sLinkingNodeId.Equals(sLinkingNodeId2))
+        //                                {
+        //                                    //update the id of the value field
+        //                                    sSelectedURIPattern = kvp.Value;
+        //                                    if (!string.IsNullOrEmpty(sSelectedURIPattern))
+        //                                    {
+        //                                        sNewSelectedURIPattern =
+        //                                            ContentURI.ChangeURIPatternPart(sSelectedURIPattern,
+        //                                            ContentURI.URIPATTERNPART.id, sNewLinkedViewJoinId);
+        //                                        if (!newLinkedViewInserted.ContainsKey(sLinkingNodeURIPattern))
+        //                                        {
+        //                                            newLinkedViewInserted.Add(sLinkingNodeURIPattern, sNewSelectedURIPattern);
+        //                                        }
+        //                                    }
+        //                                }
+        //                            }
+        //                        }
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
         public void GetLinkedViewPath(XmlElement childElement, ContentURI calcDocURI,
             ref string newCalculatedDocPath, ref string childLinkedViewPattern)
         {
