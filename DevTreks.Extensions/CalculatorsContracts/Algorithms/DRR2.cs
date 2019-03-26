@@ -319,17 +319,29 @@ namespace DevTreks.Extensions.Algorithms
             }
             return iColCount;
         }
-        private static bool IsCategoricalIndex(string label)
+        private bool IsCategoricalIndex(string label)
         {
             bool bIsCatIndex = false;
-            bool bIgnoreCase = true;
             if (label.Count() == 3
                 && !IsTotalRiskIndex(label)
                 && !IsLocationalIndex(label))
             {
                 bIsCatIndex = true;
             }
-            else if (label.StartsWith("t", bIgnoreCase, CultureInfo.InvariantCulture)
+            else if (IsCategoricalSDGIndex(label))
+            {
+                //218: sdg indicators, targets, and goals
+                bIsCatIndex = true;
+            }
+            return bIsCatIndex;
+        }
+        private bool IsCategoricalSDGIndex(string label)
+        {
+            bool bIsCatIndex = false;
+            bool bIgnoreCase = true;
+            if (label.StartsWith("t", bIgnoreCase, CultureInfo.InvariantCulture)
+                 && (_subalgorithm == MATH_SUBTYPES.subalgorithm19.ToString()
+                 || _subalgorithm == MATH_SUBTYPES.subalgorithm16.ToString())
                 && !IsTotalRiskIndex(label))
             {
                 //218: sdg indicators, targets, and goals
@@ -337,39 +349,63 @@ namespace DevTreks.Extensions.Algorithms
             }
             return bIsCatIndex;
         }
-        private static bool IsLocationalIndex(string label)
+        private bool IsLocationalIndex(string label)
         {
             bool bIsLocIndex = false;
-            bool bIgnoreCase = true;
             if (label.Count() == 2
                 && !IsTotalRiskIndex(label))
             {
                 bIsLocIndex = true;
             }
-            else if (label.StartsWith("g", bIgnoreCase, CultureInfo.InvariantCulture))
+            else if (IsLocationalSDGIndex(label))
             {
                 //218: sdg indicators, targets, and goals
                 bIsLocIndex = true;
             }
             return bIsLocIndex;
         }
-        private static bool IsIndicator(string label)
+        private bool IsLocationalSDGIndex(string label)
+        {
+            bool bIsLocIndex = false;
+            bool bIgnoreCase = true;
+            if (label.StartsWith("g", bIgnoreCase, CultureInfo.InvariantCulture)
+                && (_subalgorithm == MATH_SUBTYPES.subalgorithm19.ToString()
+                 || _subalgorithm == MATH_SUBTYPES.subalgorithm16.ToString()))
+            {
+                //218: sdg indicators, targets, and goals
+                bIsLocIndex = true;
+            }
+            return bIsLocIndex;
+        }
+        private bool IsIndicator(string label)
         {
             bool bIsIndicator = false;
-            bool bIgnoreCase = true;
             if (label.Count() > 3)
             {
                 //inds have 4 or more chars
                 bIsIndicator = true;
             }
-            else if (label.StartsWith("i", bIgnoreCase, CultureInfo.InvariantCulture))
+            else if (IsSDGIndicator(label))
             {
                 //218: sdg indicators, targets, and goals
                 bIsIndicator = true;
             }
             return bIsIndicator;
         }
-        private static bool IsTotalRiskIndex(string label)
+        private bool IsSDGIndicator(string label)
+        {
+            bool bIsIndicator = false;
+            bool bIgnoreCase = true;
+            if (label.StartsWith("i", bIgnoreCase, CultureInfo.InvariantCulture)
+               && (_subalgorithm == MATH_SUBTYPES.subalgorithm19.ToString()
+                 || _subalgorithm == MATH_SUBTYPES.subalgorithm16.ToString()))
+            {
+                //218: sdg indicators, targets, and goals
+                bIsIndicator = true;
+            }
+            return bIsIndicator;
+        }
+        private bool IsTotalRiskIndex(string label)
         {
             bool bIsTRIndex = false;
             bool bIgnoreCase = true;

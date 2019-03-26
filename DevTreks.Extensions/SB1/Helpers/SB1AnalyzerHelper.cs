@@ -8,7 +8,7 @@ namespace DevTreks.Extensions
     ///<summary>
     ///Purpose:		Helper functions for the resource stocks analyzer extension
     ///Author:		www.devtreks.org
-    ///Date:		2017, September
+    ///Date:		2019, March
     ///NOTES        1. Other modules demonstrate how to implement the analyzer patterns. 
     /// </summary>
     public class SB1AnalyzerHelper
@@ -1000,8 +1000,9 @@ namespace DevTreks.Extensions
                 this.SB1CalculatorParams.UrisToAnalyze = new List<string>();
             if (this.AnalyzerType != ANALYZER_TYPES.sbtotal1)
             {
-                //10 stock limit
-                int iCount = 10;
+                //218 allows all stocks to be analyzed
+                //15 stock limit
+                int iCount = 15;
                 //label aggregators used 
                 AddStockToList(SB1Base.cSB1Label1, iCount);
                 AddStockToList(SB1Base.cSB1Label2, iCount);
@@ -1018,23 +1019,27 @@ namespace DevTreks.Extensions
                 AddStockToList(SB1Base.cSB1Label13, iCount);
                 AddStockToList(SB1Base.cSB1Label14, iCount);
                 AddStockToList(SB1Base.cSB1Label15, iCount);
-                AddStockToList(SB1Base.cSB1Label16, iCount);
-                AddStockToList(SB1Base.cSB1Label17, iCount);
-                AddStockToList(SB1Base.cSB1Label18, iCount);
-                AddStockToList(SB1Base.cSB1Label19, iCount);
-                AddStockToList(SB1Base.cSB1Label20, iCount);
+                //218: hold for possible upgrade
+                //AddStockToList(SB1Base.cSB1Label16, iCount);
+                //AddStockToList(SB1Base.cSB1Label17, iCount);
+                //AddStockToList(SB1Base.cSB1Label18, iCount);
+                //AddStockToList(SB1Base.cSB1Label19, iCount);
+                //AddStockToList(SB1Base.cSB1Label20, iCount);
             }
         }
         private void AddStockToList(string stockLabel, int iCount)
         {
-            string sValue = CalculatorHelpers.GetAttribute(this.SB1CalculatorParams.LinkedViewElement,
-                    stockLabel);
-            //checkbox attributes are dynamically set in js as true or false
-            if (sValue == "true")
-            {
-                if (this.SB1CalculatorParams.UrisToAnalyze.Count <= iCount)
-                    this.SB1CalculatorParams.UrisToAnalyze.Add(stockLabel);
-            }
+            //218: analyze all of the stocks
+            this.SB1CalculatorParams.UrisToAnalyze.Add(stockLabel);
+            //218 deprecated -stopped working correctly in 216
+            //string sValue = CalculatorHelpers.GetAttribute(this.SB1CalculatorParams.LinkedViewElement,
+            //        stockLabel);
+            ////checkbox attributes are dynamically set in js as true or false
+            //if (sValue == "true")
+            //{
+            //    if (this.SB1CalculatorParams.UrisToAnalyze.Count <= iCount)
+            //        this.SB1CalculatorParams.UrisToAnalyze.Add(stockLabel);
+            //}
         }
         public static void AddCalculators(int alternative2, List<Calculator1> calcs, List<Calculator1> newcalcs)
         {

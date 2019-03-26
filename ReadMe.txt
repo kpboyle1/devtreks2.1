@@ -1,6 +1,6 @@
 Appendix B. ReadMe.txt
 
-Version: 2.1.6, September 13, 2018
+Version: 2.1.8, March 26, 2019
 
 Introduction
 DevTreks is a multitier ASP.NET Core 2 database 
@@ -34,13 +34,14 @@ source code sites
 https://github.com/kpboyle1/devtreks2.1 (.NET Core 2.1)
 
 database.zip file
-https://devtreks1.blob.core.windows.net/resources/db216.zip
+https://devtreks1.blob.core.windows.net/resources/db218.zip
 
 214 datafiles (any exceeding 500KB must be manually uploaded)
 https://devtreks1.blob.core.windows.net/resources/network_carbon.zip
 
-What's New in Version 2.1.6
-1. This release upgraded to AspNet Core 2.1, fixed bugs found during further 2.1.4 testing, and upgraded the calculator patterns.
+What's New in Version 2.1.8
+1. This release focused on uniform commmunity, product, and organization sustainability scores. 
+The SDG Plan reference demonstrates how to automate these scores.
 
 
 Server version: Sql Server 2017 Express, RTM
